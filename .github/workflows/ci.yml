@@ -67,6 +67,8 @@ jobs:
           [[ "$PIN" =~ ^[0-9a-f]{40}$ ]] || { echo 'Invalid CONTRACT_PIN'; exit 1; }
           git clone --no-checkout https://github.com/lm15-dev/lm15-contract.git ../lm15-contract
           git -C ../lm15-contract checkout --detach "$PIN"
+      - name: Expose the checkout where the contract's shim registry looks (../lm15-jl)
+        run: ln -s "$GITHUB_WORKSPACE" ../lm15-jl
       - name: Instantiate and precompile
         run: julia --project=. -e 'using Pkg; Pkg.instantiate(); Pkg.precompile()'
       - name: Allow unprivileged user namespaces, so the harness can cut the shim's network
