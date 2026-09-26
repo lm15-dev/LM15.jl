@@ -25,7 +25,7 @@ For an application that does not need an editable checkout:
 ```julia
 using Pkg
 Pkg.activate(".")
-Pkg.add(url="https://github.com/lm15-dev/lm15-jl.git")
+Pkg.add(url="https://github.com/lm15-dev/LM15.jl.git")
 using LM15
 ```
 

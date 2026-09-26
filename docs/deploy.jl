@@ -14,5 +14,5 @@ isfile(joinpath(@__DIR__, "build", "index.html")) || error("No built manual to p
 # Configure a trusted CI deployment environment before enabling this. Do not run
 # publication with a token exposed to pull-request code. Shared-site hosting can
 # consume the same artifact instead of using this project-pages deployment path.
-deploydocs(root=@__DIR__, repo="github.com/lm15-dev/lm15-jl.git",
+deploydocs(root=@__DIR__, repo="github.com/lm15-dev/LM15.jl.git",
     devbranch="main", devurl="dev", target="build", push_preview=false)

@@ -72,7 +72,7 @@ end
 
 function set_edit_url(path, relative_source)
     ref = get(ENV, "LM15_DOCS_SOURCE_REF", "main")
-    url = "https://github.com/lm15-dev/lm15-jl/edit/$ref/" * replace(relative_source, '\\'=>'/')
+    url = "https://github.com/lm15-dev/LM15.jl/edit/$ref/" * replace(relative_source, '\\'=>'/')
     text = read(path, String)
     assignment = "EditURL = " * repr(url)
     if occursin(r"(?m)^EditURL\s*=", text)

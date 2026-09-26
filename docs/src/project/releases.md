@@ -3,7 +3,7 @@
 ## 1.0.0 (2026-09-26)
 
 The first release of lm15 for Julia, at parity with Python, TypeScript, Rust and Go
-(see [the changelog](https://github.com/lm15-dev/lm15-jl/blob/main/CHANGELOG.md)).
+(see [the changelog](https://github.com/lm15-dev/LM15.jl/blob/main/CHANGELOG.md)).
 Coming from the 0.3 development versions:
 
 - When a stored xAI subscription login is unusable (expired, no refresh token) or was

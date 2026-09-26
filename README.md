@@ -32,7 +32,7 @@ Requires Julia 1.10 or newer.
 
 ```julia
 using Pkg
-Pkg.add(url="https://github.com/lm15-dev/lm15-jl")
+Pkg.add(url="https://github.com/lm15-dev/LM15.jl")
 ```
 
 **1.0.0 is the first release of lm15 for Julia.** It is not yet in Julia's
