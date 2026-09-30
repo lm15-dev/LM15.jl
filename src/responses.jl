@@ -146,6 +146,8 @@ function normalize_error(l::ProviderLM, status, body)
     elseif l.dialect=="anthropic"
         isempty(inner) && (inner=data)
         message=raw isa AbstractString ? raw : wire_string(get(inner, "message", ""))
+        # AUTH-10 backend settings: the minimum-version refusal names the setting to change.
+        l.access.backend=="claude-code" && (message=claude_code_version_guidance(message))
         code=wire_string(first_nonempty(get(inner, "type", nothing), get(inner, "code", nothing)))
         T=if context_error(message)
             ContextLengthError

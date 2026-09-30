@@ -631,13 +631,27 @@ function anthropic_part(l, p, c)
     end
     return obj("type"=>"text", "text"=>parts_to_text((p,); provider=l.provider))
 end
-# Output ceilings by model class, for the max_tokens the Messages API requires.
-function anthropic_default_max_tokens(model)
+# The max_tokens the Messages API requires and the caller did not set (MAP-13 defaulted;
+# MAP-7 rule 6, amended 2026-09-30): a Claude model's own output ceiling, the value
+# OpenAI and Gemini apply when their field is omitted — 128000 for the 4.6 generation
+# and every later Claude (and any Claude name this table has not met: a lower real
+# ceiling is a loud 400, never a silent truncation), 64000 for the 4.5 generation; the
+# retired 3.x values stay. From Anthropic's Models API max_tokens (receipts 2026-09-01,
+# 2026-09-30). A name that is not Claude's (DeepSeek, Kimi, Muse on an Anthropic-dialect
+# server) gets `nothing`: 16384 is sent, those servers publish their own ceilings.
+const CLAUDE_OUTPUT_CEILINGS = (
+    ("claude-3-haiku", 4096), ("claude-3-opus", 4096), ("claude-3-sonnet", 4096),
+    ("claude-3-5-", 8192), ("claude-3.5-", 8192),
+    ("claude-haiku-4-5", 64000), ("claude-sonnet-4-5", 64000), ("claude-opus-4-5", 64000),
+    ("claude", 128000),
+)
+const ANTHROPIC_DEFAULT_MAX_TOKENS = 16384
+function claude_output_ceiling(model)
     lowered=lowercase(model)
-    for (marker, ceiling) in (("claude-3-haiku", 4096), ("claude-3-opus", 4096), ("claude-3-sonnet", 4096), ("claude-3-5-", 8192), ("claude-3.5-", 8192))
+    for (marker, ceiling) in CLAUDE_OUTPUT_CEILINGS
         occursin(marker, lowered) && return ceiling
     end
-    return 16384
+    return nothing
 end
 function anthropic_payload(l, r; stream=false)
     c=effective_compat(l, r)
@@ -687,7 +701,7 @@ function anthropic_payload(l, r; stream=false)
                 adapt!("config.reasoning.thinking_budget", "dropped",
                     c.thinking_format=="deepseek" ? "this server ignores budget_tokens; effort is the dial" :
                     c.thinking_format=="adaptive" ? "this server accepts budget_tokens without translating it; effort is the dial (protocols--messages.md)" :
-                    "$(r.model) takes thinking.type 'adaptive' with output_config.effort; budget_tokens is rejected by the API (live 2026-09-02)";
+                    "$(r.model) takes thinking.type 'adaptive' with output_config.effort; budget_tokens is rejected by the API (live 2026-09-02). Thinking is bounded only by max_tokens, which covers thinking and answer together: lower the effort or raise max_tokens";
                     asked=thinking_budget)
                 thinking_budget=nothing
             end
@@ -698,11 +712,25 @@ function anthropic_payload(l, r; stream=false)
         end
     end
     budget=active && !adaptive ? something(thinking_budget, EFFORT_BUDGETS[effort]) : nothing
-    # The Messages API requires max_tokens; when none was set, the class default is used and recorded.
+    # The Messages API requires max_tokens: when none was set, a Claude model gets its
+    # output ceiling as the WIRE value (on the manual class the visible part is what the
+    # budget leaves), any other model 16384 visible; the default is recorded (MAP-13,
+    # MAP-7 rule 6).
     visible=config.max_tokens
     if visible===nothing
-        visible=anthropic_default_max_tokens(r.model)
-        adapt!("config.max_tokens", "defaulted", "the Messages API requires max_tokens and none was set; the class default was used"; applied=visible)
+        ceiling=claude_output_ceiling(r.model)
+        visible=if ceiling===nothing
+            ANTHROPIC_DEFAULT_MAX_TOKENS
+        elseif budget===nothing
+            ceiling
+        elseif budget<ceiling
+            ceiling-budget
+        else
+            ANTHROPIC_DEFAULT_MAX_TOKENS  # the budget alone reaches the ceiling: the server's 400 names it
+        end
+        adapt!("config.max_tokens", "defaulted", ceiling===nothing ?
+            "the Messages API requires max_tokens and none was set; 16384 was used (this server's ceiling is its own)" :
+            "the Messages API requires max_tokens and none was set; the model's output ceiling was used"; applied=visible)
     end
     d=obj(
         "model"=>r.model,

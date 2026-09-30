@@ -37,7 +37,8 @@
       "backend": "api",
       "backend_options": {},
       "system_prefix": null,
-      "base_url": null
+      "base_url": null,
+      "backend_settings": []
     },
     "console_url": "https://platform.openai.com/api-keys",
     "note": "OpenAI Responses API"
@@ -78,7 +79,8 @@
       "backend": "api",
       "backend_options": {},
       "system_prefix": null,
-      "base_url": null
+      "base_url": null,
+      "backend_settings": []
     },
     "console_url": "https://platform.openai.com/api-keys",
     "note": "OpenAI Chat Completions dialect (the de-facto standard other servers speak)"
@@ -119,7 +121,8 @@
       "backend": "api",
       "backend_options": {},
       "system_prefix": null,
-      "base_url": null
+      "base_url": null,
+      "backend_settings": []
     },
     "console_url": "https://console.anthropic.com",
     "note": "Anthropic Messages API"
@@ -162,7 +165,8 @@
       "backend": "api",
       "backend_options": {},
       "system_prefix": null,
-      "base_url": null
+      "base_url": null,
+      "backend_settings": []
     },
     "console_url": "https://aistudio.google.com/apikey",
     "note": "Google Gemini API"
@@ -204,7 +208,8 @@
       "backend": "api",
       "backend_options": {},
       "system_prefix": null,
-      "base_url": "https://api.x.ai/v1"
+      "base_url": "https://api.x.ai/v1",
+      "backend_settings": []
     },
     "compat": "xai",
     "console_url": "https://console.x.ai",
@@ -246,7 +251,8 @@
       "backend": "api",
       "backend_options": {},
       "system_prefix": null,
-      "base_url": null
+      "base_url": null,
+      "backend_settings": []
     },
     "console_url": "https://console.typesafe.ai/keys",
     "note": "TypeSafe System One (Jev): judgments over declared keys with probabilities; no text generation"
@@ -295,15 +301,26 @@
         ],
         [
           "user-agent",
-          "claude-cli/2.1.170"
+          "claude-cli/2.1.285"
         ]
       ],
       "host": null,
       "login_hint": "Log in again: run `claude` and use /login (Claude subscription auth)",
       "backend": "claude-code",
-      "backend_options": {},
+      "backend_options": {
+        "client_version": "2.1.285"
+      },
       "system_prefix": "You are Claude Code, Anthropic's official CLI for Claude.",
-      "base_url": null
+      "base_url": null,
+      "backend_settings": [
+        {
+          "name": "client_version",
+          "env": [
+            "LM15_CLAUDE_CODE_VERSION"
+          ],
+          "default": null
+        }
+      ]
     },
     "note": "Claude subscription through the local `claude` CLI login"
   },
@@ -353,7 +370,16 @@
         "client_version": "0.147.0"
       },
       "system_prefix": "You are a helpful assistant.",
-      "base_url": "https://chatgpt.com/backend-api/codex"
+      "base_url": "https://chatgpt.com/backend-api/codex",
+      "backend_settings": [
+        {
+          "name": "client_version",
+          "env": [
+            "LM15_CODEX_CLIENT_VERSION"
+          ],
+          "default": null
+        }
+      ]
     },
     "note": "ChatGPT subscription through the local `codex` CLI login"
   },
@@ -393,7 +419,8 @@
       "backend": "api",
       "backend_options": {},
       "system_prefix": null,
-      "base_url": "https://api.groq.com/openai/v1"
+      "base_url": "https://api.groq.com/openai/v1",
+      "backend_settings": []
     },
     "compat": "groq",
     "console_url": "https://console.groq.com/keys",
@@ -435,7 +462,8 @@
       "backend": "api",
       "backend_options": {},
       "system_prefix": null,
-      "base_url": "https://openrouter.ai/api/v1"
+      "base_url": "https://openrouter.ai/api/v1",
+      "backend_settings": []
     },
     "compat": "openrouter",
     "console_url": "https://openrouter.ai/keys",
@@ -477,7 +505,8 @@
       "backend": "api",
       "backend_options": {},
       "system_prefix": null,
-      "base_url": "https://api.deepseek.com"
+      "base_url": "https://api.deepseek.com",
+      "backend_settings": []
     },
     "compat": "deepseek",
     "console_url": "https://platform.deepseek.com/api_keys",
@@ -519,7 +548,8 @@
       "backend": "api",
       "backend_options": {},
       "system_prefix": null,
-      "base_url": "https://api.deepseek.com/anthropic/v1"
+      "base_url": "https://api.deepseek.com/anthropic/v1",
+      "backend_settings": []
     },
     "compat": "deepseek",
     "console_url": "https://platform.deepseek.com/api_keys",
@@ -561,7 +591,8 @@
       "backend": "api",
       "backend_options": {},
       "system_prefix": null,
-      "base_url": "https://api.z.ai/api/paas/v4"
+      "base_url": "https://api.z.ai/api/paas/v4",
+      "backend_settings": []
     },
     "compat": "zai",
     "console_url": "https://z.ai/manage-apikey/apikey-list",
@@ -604,7 +635,8 @@
       "backend": "api",
       "backend_options": {},
       "system_prefix": null,
-      "base_url": "https://api.moonshot.ai/v1"
+      "base_url": "https://api.moonshot.ai/v1",
+      "backend_settings": []
     },
     "compat": "moonshotai",
     "console_url": "https://platform.kimi.ai/console/api-keys",
@@ -647,7 +679,8 @@
       "backend": "api",
       "backend_options": {},
       "system_prefix": null,
-      "base_url": "https://api.moonshot.ai/v1"
+      "base_url": "https://api.moonshot.ai/v1",
+      "backend_settings": []
     },
     "compat": "moonshotai",
     "console_url": "https://platform.kimi.ai/console/api-keys",
@@ -690,7 +723,8 @@
       "backend": "api",
       "backend_options": {},
       "system_prefix": null,
-      "base_url": "https://api.moonshot.ai/anthropic/v1"
+      "base_url": "https://api.moonshot.ai/anthropic/v1",
+      "backend_settings": []
     },
     "compat": "moonshotai",
     "console_url": "https://platform.kimi.ai/console/api-keys",
@@ -732,7 +766,8 @@
       "backend": "api",
       "backend_options": {},
       "system_prefix": null,
-      "base_url": "https://api.deepinfra.com/v1/openai"
+      "base_url": "https://api.deepinfra.com/v1/openai",
+      "backend_settings": []
     },
     "compat": "deepinfra",
     "console_url": "https://deepinfra.com/dash/api_keys",
@@ -774,7 +809,8 @@
       "backend": "api",
       "backend_options": {},
       "system_prefix": null,
-      "base_url": "https://api.together.ai/v1"
+      "base_url": "https://api.together.ai/v1",
+      "backend_settings": []
     },
     "compat": "together",
     "console_url": "https://api.together.ai/settings/projects/~current/api-keys",
@@ -816,7 +852,8 @@
       "backend": "api",
       "backend_options": {},
       "system_prefix": null,
-      "base_url": "https://api.fireworks.ai/inference/v1"
+      "base_url": "https://api.fireworks.ai/inference/v1",
+      "backend_settings": []
     },
     "compat": "fireworks",
     "console_url": "https://app.fireworks.ai/settings/users/api-keys",
@@ -858,7 +895,8 @@
       "backend": "api",
       "backend_options": {},
       "system_prefix": null,
-      "base_url": "https://api.parasail.io/v1"
+      "base_url": "https://api.parasail.io/v1",
+      "backend_settings": []
     },
     "compat": "parasail",
     "console_url": "https://www.saas.parasail.io/keys",
@@ -900,7 +938,8 @@
       "backend": "api",
       "backend_options": {},
       "system_prefix": null,
-      "base_url": "https://api.meta.ai/v1"
+      "base_url": "https://api.meta.ai/v1",
+      "backend_settings": []
     },
     "compat": "meta",
     "console_url": "https://dev.meta.ai/",
@@ -942,7 +981,8 @@
       "backend": "api",
       "backend_options": {},
       "system_prefix": null,
-      "base_url": "https://api.meta.ai/v1"
+      "base_url": "https://api.meta.ai/v1",
+      "backend_settings": []
     },
     "compat": "meta",
     "console_url": "https://dev.meta.ai/",
@@ -984,7 +1024,8 @@
       "backend": "api",
       "backend_options": {},
       "system_prefix": null,
-      "base_url": "https://api.meta.ai/v1"
+      "base_url": "https://api.meta.ai/v1",
+      "backend_settings": []
     },
     "compat": "meta",
     "console_url": "https://dev.meta.ai/",
@@ -1060,7 +1101,8 @@
       "backend": "azure-openai",
       "backend_options": {},
       "system_prefix": null,
-      "base_url": null
+      "base_url": null,
+      "backend_settings": []
     },
     "console_url": "https://portal.azure.com/",
     "note": "Azure OpenAI v1 Responses wire ({resource}.openai.azure.com, or AZURE_OPENAI_ENDPOINT = the Foundry root the console shows; model = deployment name; api-key or Entra token)"
@@ -1135,7 +1177,8 @@
       "backend": "azure-openai",
       "backend_options": {},
       "system_prefix": null,
-      "base_url": null
+      "base_url": null,
+      "backend_settings": []
     },
     "compat": "openai",
     "console_url": "https://portal.azure.com/",
@@ -1211,7 +1254,8 @@
       "backend": "azure-foundry",
       "backend_options": {},
       "system_prefix": null,
-      "base_url": null
+      "base_url": null,
+      "backend_settings": []
     },
     "console_url": "https://ai.azure.com/",
     "note": "Claude in Microsoft Foundry ({resource}.services.ai.azure.com/anthropic or ANTHROPIC_FOUNDRY_BASE_URL; x-api-key or Entra token)"
@@ -1288,7 +1332,8 @@
       "backend": "aws-external-anthropic",
       "backend_options": {},
       "system_prefix": null,
-      "base_url": null
+      "base_url": null,
+      "backend_settings": []
     },
     "console_url": "https://console.aws.amazon.com/",
     "note": "Claude Platform on AWS (Anthropic-operated; SigV4 or ANTHROPIC_AWS_API_KEY; needs AWS_REGION and ANTHROPIC_AWS_WORKSPACE_ID)"
@@ -1353,7 +1398,8 @@
       "backend": "bedrock-mantle",
       "backend_options": {},
       "system_prefix": null,
-      "base_url": null
+      "base_url": null,
+      "backend_settings": []
     },
     "console_url": "https://console.aws.amazon.com/bedrock/",
     "note": "Claude in Amazon Bedrock (bedrock-mantle, Opus 4.7 and later; SigV4 or AWS_BEARER_TOKEN_BEDROCK; needs AWS_REGION)"
@@ -1418,7 +1464,8 @@
       "backend": "bedrock-runtime",
       "backend_options": {},
       "system_prefix": null,
-      "base_url": null
+      "base_url": null,
+      "backend_settings": []
     },
     "compat": "bedrock",
     "console_url": "https://console.aws.amazon.com/bedrock/",
@@ -1484,7 +1531,8 @@
       "backend": "bedrock-mantle",
       "backend_options": {},
       "system_prefix": null,
-      "base_url": null
+      "base_url": null,
+      "backend_settings": []
     },
     "compat": "bedrock-mantle",
     "console_url": "https://console.aws.amazon.com/bedrock/",
@@ -1552,7 +1600,8 @@
       "backend": "vertex",
       "backend_options": {},
       "system_prefix": null,
-      "base_url": null
+      "base_url": null,
+      "backend_settings": []
     },
     "console_url": "https://console.cloud.google.com/vertex-ai",
     "note": "Gemini on Google Cloud (Agent Platform); ADC chain; needs GOOGLE_CLOUD_PROJECT, GOOGLE_CLOUD_LOCATION defaults to global"
@@ -1603,7 +1652,8 @@
       "backend": "vertex-express",
       "backend_options": {},
       "system_prefix": null,
-      "base_url": null
+      "base_url": null,
+      "backend_settings": []
     },
     "console_url": "https://console.cloud.google.com/vertex-ai/studio",
     "note": "Agent Platform express mode: GOOGLE_API_KEY as ?key=, no project or location"
@@ -1671,7 +1721,8 @@
       "backend": "vertex",
       "backend_options": {},
       "system_prefix": null,
-      "base_url": null
+      "base_url": null,
+      "backend_settings": []
     },
     "console_url": "https://console.cloud.google.com/vertex-ai/model-garden",
     "note": "Claude on Google Cloud (rawPredict; model in the path, anthropic_version in the body)"
@@ -1710,7 +1761,8 @@
       "backend": "api",
       "backend_options": {},
       "system_prefix": null,
-      "base_url": "http://localhost:11434/v1"
+      "base_url": "http://localhost:11434/v1",
+      "backend_settings": []
     },
     "compat": "ollama",
     "placeholder_key": "ollama",
@@ -1750,7 +1802,8 @@
       "backend": "api",
       "backend_options": {},
       "system_prefix": null,
-      "base_url": "http://localhost:8000/v1"
+      "base_url": "http://localhost:8000/v1",
+      "backend_settings": []
     },
     "compat": "vllm",
     "placeholder_key": "EMPTY",
@@ -1790,7 +1843,8 @@
       "backend": "api",
       "backend_options": {},
       "system_prefix": null,
-      "base_url": "http://localhost:30000/v1"
+      "base_url": "http://localhost:30000/v1",
+      "backend_settings": []
     },
     "compat": "sglang",
     "placeholder_key": "EMPTY",

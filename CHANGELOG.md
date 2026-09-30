@@ -1,5 +1,24 @@
 # Changelog
 
+## Unreleased
+
+Claude Code and Claude defaults (lm15-contract
+`changes/2026-09-30-claude-code-client-version.md`):
+
+- **The Claude Code release is current and settable.** The `claude-code` door claims
+  Claude Code 2.1.285 (it claimed 2.1.170, which `claude-opus-5-5` refuses). When a model
+  needs a newer release, pass `settings=Dict("client_version" => "...")` (a router's
+  `RouterConfig(settings=...)` entry, or the client's own) or set
+  `LM15_CLAUDE_CODE_VERSION`, which a router reads. The Codex door's `client_version` is
+  the same setting (`LM15_CODEX_CLIENT_VERSION`). `explain_auth` prints the release and
+  where it came from.
+- **The refusal says what to change**: updating the `claude` program does not move what
+  LM15 sends, so the error names the setting.
+- **A settings entry nothing reads raises** `NotConfiguredError` (it was ignored).
+- **Claude's default `max_tokens` is the model's own output ceiling**: 128000 for the 4.6
+  generation and later, 64000 for 4.5 (it was 16384); on the manual class it covers the
+  thinking budget. Other models on Anthropic-dialect servers keep 16384.
+
 ## 1.0.0 — 2026-09-26
 
 The first release of lm15 for Julia. Graded by lm15-contract at the commit in

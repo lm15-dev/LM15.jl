@@ -329,7 +329,7 @@ function explain_auth(
     end
     if policy.credential_policy=="oauth"
         s=oauth_step(false)
-        return AuthReport(p.id, [s], s.state===:selected)
+        return with_backend_settings(AuthReport(p.id, [s], s.state===:selected), policy, settings, environment)
     end
     keysmap=if isempty(api_key_providers)
         api_keys
@@ -379,7 +379,19 @@ function explain_auth(
         )
         selected=true
     end
-    return AuthReport(p.id, steps, selected, Dict{String,String}(settings))
+    return with_backend_settings(AuthReport(p.id, steps, selected, Dict{String,String}(settings)), policy, settings, environment)
+end
+
+# A door without a host prints its backend settings the way a cloud door prints its host
+# settings (AUTH-7; AUTH-10 amended 2026-09-30): the Claude Code release the claude-code
+# door claims, and where it came from.
+function with_backend_settings(r::AuthReport, policy::AccessPolicy, given, env)
+    (policy.host !== nothing || (isempty(policy.backend_settings) && isempty(given))) && return r
+    sources=Dict{String,String}()
+    values=resolve_backend_settings(policy, given; env, sources)
+    from=OrderedDict{String,Any}(s.name=>(value=values[s.name], from=sources[s.name], state=nothing) for s in policy.backend_settings)
+    return AuthReport(r.provider, r.steps, r.configured, values; settings_from=from,
+        base_url=r.base_url, base_url_from=r.base_url_from, named=r.named, problems=r.problems)
 end
 
 """AUTH-15 mode B, rung by rung: the explicit entry, the named cloud identity, the scope's
@@ -421,7 +433,7 @@ function explain_managed(provider; auth, env, api_keys=Dict(), api_key_providers
         push!(steps, AuthStep("placeholder", "preset default for keyless $id servers", selected ? :shadowed : :selected))
         selected=true
     end
-    return AuthReport(id, steps, selected)
+    return with_backend_settings(AuthReport(id, steps, selected), definition.access, Dict{String,String}(), env)
 end
 
 # An OS-backed lock is released by the kernel even if the process dies. It uses

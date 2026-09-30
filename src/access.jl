@@ -48,6 +48,11 @@ Base.@kwdef struct AccessPolicy
     backend_options::JsonObject = obj()
     system_prefix::Maybe{String} = nothing
     base_url::Maybe{String} = nothing
+    # The backend_options a caller may set on a door without a host (AUTH-10,
+    # amended 2026-09-30): each names a backend_options key and the env
+    # variables the router consults; its default is the table's backend_options
+    # value. The subscription doors declare client_version.
+    backend_settings::Tuple = ()
 end
 Base.@kwdef struct ProviderDefinition
     id::String
@@ -118,6 +123,10 @@ function policy_from_dict(d)
         filter!(kv->first(kv) in fieldnames(HostSpec) && last(kv)!==nothing, h)
         kw[:host]=HostSpec(; h...)
     end
+    kw[:backend_settings]=Tuple(
+        HostSetting(; name=s["name"], env=Tuple(get(s, "env", [])), default=get(s, "default", nothing))
+        for s in get(d, "backend_settings", [])
+    )
     return AccessPolicy(; kw...)
 end
 const PROVIDERS = let rows=JSON.parse(read(joinpath(@__DIR__, "data", "providers.json"), String))
@@ -223,6 +232,14 @@ function validate(policy::AccessPolicy)
             throw(ArgumentError("policy header must not contain a newline"))
     end
     check_json(policy.backend_options)
+    for s in policy.backend_settings
+        # One authority for the value a door sends by default: the table's option.
+        s isa HostSetting && !isempty(s.name) || throw(ArgumentError("invalid backend setting"))
+        s.default === nothing || throw(ArgumentError("backend setting $(repr(s.name)) takes its default from backend_options"))
+        haskey(policy.backend_options, s.name) || throw(ArgumentError("backend setting $(repr(s.name)) has no backend_options default"))
+    end
+    isempty(policy.backend_settings) || policy.host === nothing ||
+        throw(ArgumentError("a door with a host declares its settings on the host"))
     if policy.host !== nothing
         host = policy.host
         host.model_in in ("body", "path") || throw(ArgumentError("unknown model placement"))
@@ -476,3 +493,79 @@ function render_base_url(host::HostSpec, settings, endpoint=nothing; provider=""
     return endpoint===nothing ? url : join_endpoint(endpoint, url; provider)
 end
 host_base_url(host::HostSpec, settings) = render_base_url(host, settings)
+
+"""
+    resolve_backend_settings(policy, given; env=nothing, sources=nothing) -> Dict{String,String}
+
+A door's backend settings (AUTH-10, amended 2026-09-30): the caller's value, then
+`env` (when given — the router passes the environment, a client built by hand does
+not), then the table's `backend_options` value. `sources` receives each origin
+(`explicit`, `env:<VAR>`, `default`). A name the door does not declare is a
+`NotConfiguredError` that lists the names it does: a setting nothing reads would
+otherwise be dropped with nothing said.
+"""
+function resolve_backend_settings(policy::AccessPolicy, given; env=nothing, sources=nothing)
+    given = Dict{String,String}(String(k)=>String(v) for (k, v) in something(given, Dict{String,String}()))
+    known = [s.name for s in policy.backend_settings]
+    unknown = sort!([k for k in keys(given) if !(k in known)])
+    if !isempty(unknown)
+        hint = isempty(known) ? "this door takes no settings" : "known: $(join(known, ", "))"
+        fix = isempty(known) ? "Remove the settings entry for $(policy.provider)" : "Pass only $(join(known, ", ")) for $(policy.provider)"
+        throw(NotConfiguredError("$(policy.provider): unknown setting(s) $(join(("'$n'" for n in unknown), ", ")); $hint";
+            provider=policy.provider, credential_hint=fix))
+    end
+    out = Dict{String,String}()
+    for s in policy.backend_settings
+        value = get(given, s.name, "")
+        origin = "explicit"
+        if isempty(value) && env !== nothing
+            for name in s.env
+                candidate = get(env, name, "")
+                isempty(candidate) || (value = candidate; origin = "env:$name"; break)
+            end
+        end
+        isempty(value) && (value = String(policy.backend_options[s.name]); origin = "default")
+        out[s.name] = value
+        sources === nothing || (sources[s.name] = origin)
+    end
+    return out
+end
+
+"""
+    with_backend_settings(policy, values) -> AccessPolicy
+
+The policy with these resolved backend settings in `backend_options`. `client_version`
+on the `claude-code` backend is also the version the `user-agent` header claims
+(`claude-cli/<client_version>`); on `chatgpt-codex` it is the `/models` query parameter.
+"""
+function with_backend_settings(policy::AccessPolicy, values)
+    all(get(policy.backend_options, k, nothing) == v for (k, v) in values) && return policy
+    options = copy(policy.backend_options)
+    for (k, v) in values
+        options[k] = v
+    end
+    headers = policy.headers
+    if policy.backend == "claude-code" && haskey(values, "client_version")
+        headers = Tuple((lowercase(first(h)) == "user-agent" ? (first(h), "claude-cli/$(values["client_version"])") : h) for h in headers)
+    end
+    return AccessPolicy(; (f=>getfield(policy, f) for f in fieldnames(AccessPolicy))..., backend_options=options, headers)
+end
+
+const CLAUDE_CODE_VERSION_ENV = "LM15_CLAUDE_CODE_VERSION"
+const CLAUDE_CODE_FLOOR = r"Claude Code (\S+) does not support this model; version (\S+) or newer is required"
+
+"""
+    claude_code_version_guidance(message) -> String
+
+The claude-code door's minimum-version refusal with what an LM15 caller changes
+(AUTH-10 backend settings): the server says "run 'claude update'", which does not move
+the version LM15 claims. Any other message is returned unchanged.
+"""
+function claude_code_version_guidance(message::AbstractString)
+    m = match(CLAUDE_CODE_FLOOR, message)
+    (m === nothing || occursin("\n\n  To fix:", message)) && return String(message)
+    required = m.captures[2]
+    return string(message, "\n\n  To fix:\n",
+        "    - lm15 sends this version itself; updating Claude Code does not change it\n",
+        "    - Set the claude-code setting client_version to $required or newer (or $CLAUDE_CODE_VERSION_ENV=$required)\n")
+end

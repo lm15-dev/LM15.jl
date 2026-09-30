@@ -160,7 +160,13 @@ function ProviderLM(
         throw(NotConfiguredError("empty explicit credential; no fallback"; provider=definition.id))
     (credential isa Union{AbstractString,CredentialValue}) &&
         select_scheme(policy, resolve_credential(credential))
-    policy.host===nothing && (settings=Dict{String,String}(settings))
+    if policy.host===nothing
+        # A door without a host: `settings` are its backend settings (AUTH-10, amended
+        # 2026-09-30) — explicit, then (a router's) environment, then the table; a name
+        # the door does not declare raises instead of being dropped.
+        settings=resolve_backend_settings(policy, settings; env=router_mode ? env : nothing)
+        policy=with_backend_settings(policy, settings)
+    end
     CT=if definition.dialect=="openai-chat"
         OpenAIChatCompat
     elseif definition.dialect=="openai-responses"
