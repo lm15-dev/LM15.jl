@@ -50,6 +50,21 @@ const INGEST_REFUSED_KEYS=(
     "prediction",
     "web_search_options",
 )
+# MAP-12 rule 4 (amended 2026-09-29): OpenAI's server takes wav and mp3,
+# Gemini's any audio type, and DSPy writes the MIME subtype (mpeg for .mp3).
+# Each format reads as its true media type; a builder with no audio slot
+# raises at send (MAP-10).
+const INGEST_AUDIO_MEDIA_TYPES=Dict{String,String}(
+    "wav"=>"audio/wav",
+    "mp3"=>"audio/mpeg",
+    "mpeg"=>"audio/mpeg",
+    "ogg"=>"audio/ogg",
+    "opus"=>"audio/opus",
+    "flac"=>"audio/flac",
+    "aac"=>"audio/aac",
+    "aiff"=>"audio/aiff",
+    "webm"=>"audio/webm",
+)
 function ingest_keys(d, allowed, where)
     d isa AbstractDict || throw(ArgumentError("$where must be an object"))
     for key in keys(d)
@@ -109,13 +124,17 @@ function ingest_blocks(content, role)
             ingest_keys(block, ("type", "input_audio"), "audio")
             spec=ingest_keys(get(block, "input_audio", nothing), ("data", "format"), "input_audio")
             format=get(spec, "format", nothing)
-            format in ("wav", "mp3") ||
-                throw(ArgumentError("input_audio format must be wav or mp3"))
+            media_type=format isa AbstractString ? get(INGEST_AUDIO_MEDIA_TYPES, format, nothing) : nothing
+            media_type===nothing && throw(
+                ArgumentError(
+                    "input_audio format must be one of $(join(sort!(collect(keys(INGEST_AUDIO_MEDIA_TYPES))), ", "))",
+                ),
+            )
             push!(
                 parts,
                 AudioPart(;
                     data=ingest_string(get(spec, "data", nothing), "input_audio.data"),
-                    media_type=format=="wav" ? "audio/wav" : "audio/mpeg",
+                    media_type,
                 ),
             )
         elseif tag=="file" && role=="user"
