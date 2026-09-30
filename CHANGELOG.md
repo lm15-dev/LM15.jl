@@ -1,8 +1,14 @@
 # Changelog
 
-## Unreleased
+## 1.0.0 — 2026-09-30
 
-Claude Code and Claude defaults (lm15-contract
+The first release of lm15 for Julia. Graded by lm15-contract at the commit in
+`CONTRACT_PIN` (`57e33d1`): 1,838 of 1,838 checks, the same count as Python, TypeScript,
+Rust, Go and R. The registration first opened on 2026-09-26 at 1,788 checks; while it
+waited for review it was moved to this commit, which adds the two changes below, so the
+first published version carries them.
+
+**Claude Code and Claude defaults** (lm15-contract
 `changes/2026-09-30-claude-code-client-version.md`):
 
 - **The Claude Code release is current and settable.** The `claude-code` door claims
@@ -18,11 +24,9 @@ Claude Code and Claude defaults (lm15-contract
 - **Claude's default `max_tokens` is the model's own output ceiling**: 128000 for the 4.6
   generation and later, 64000 for 4.5 (it was 16384); on the manual class it covers the
   thinking budget. Other models on Anthropic-dialect servers keep 16384.
+- **Chat Completions ingest** reads `input_audio` in ogg, opus, flac, aac, aiff, webm
+  and mpeg as their true media types (contract `307925a`).
 
-## 1.0.0 — 2026-09-26
-
-The first release of lm15 for Julia. Graded by lm15-contract at the commit in
-`CONTRACT_PIN`: 1,788 of 1,788 checks, the same count as Python, TypeScript, Rust and Go.
 Brought up from the 2026-09-11 contract (`cfed007`) with everything ratified since:
 
 - **Providers.** DeepInfra, Together AI, Fireworks AI and Parasail (registry, presets

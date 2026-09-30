@@ -176,8 +176,8 @@ Chat Completions ingest and sign-in.
 ## Conformance
 
 This package is graded by [lm15-contract](https://github.com/lm15-dev/lm15-contract)
-at the commit in `CONTRACT_PIN`: **1,788 of 1,788 checks pass** (2026-09-26), the
-same count as Python, TypeScript, Rust and Go. The checks compare the exact
+at the commit in `CONTRACT_PIN`: **1,838 of 1,838 checks pass** (2026-09-30), the
+same count as Python, TypeScript, Rust, Go and R. The checks compare the exact
 requests lm15 builds and the responses it reads against recorded provider traffic.
 The sign-in store is shared: runs that alternate Julia with Python, TypeScript,
 Rust and Go on one file, and two processes of different languages renewing the

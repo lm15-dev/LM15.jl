@@ -1,6 +1,12 @@
 # Releasing LM15.jl
 
-## What 1.0.0 was checked with (2026-09-26)
+## What 1.0.0 was checked with
+
+Re-checked 2026-09-30 at contract `57e33d1`, when the pending registration moved to the
+commit that carries the Claude Code and `max_tokens` changes: `Pkg.test()` (Julia 1.12)
+and the contract, 1,838 of 1,838. The rest below is from 2026-09-26, at 1,788 checks;
+the cross-language runs and live smoke were not repeated.
+
 
 ```bash
 julia --project=. -e 'using Pkg; Pkg.test()'                           # Julia 1.12.7 and 1.10.12
