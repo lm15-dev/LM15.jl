@@ -603,20 +603,37 @@ function request_from_openai_chat(l::ProviderLM, body::AbstractDict)
     return request_from_openai_chat(body; compat=l.compat)
 end
 const LITELLM_PROVIDER_PREFIXES=Dict{String,String}(ROUTING_DATA["LITELLM_PROVIDER_PREFIXES"])
-function openai_chat_model_string(model::AbstractString)
+"""
+    openai_chat_model_string(model; providers=())
+
+The lm15 model string for one written for the OpenAI SDK or litellm: an lm15
+`provider:model` string unchanged; litellm's `provider/model` through
+`LITELLM_PROVIDER_PREFIXES` (first segment only) or a declared provider's id
+and aliases (`providers`, either spelling); anything else, including a prefix
+with nothing after it, unchanged for the router's own rungs.
+"""
+function openai_chat_model_string(model::AbstractString; providers=())
     occursin(':', model) && return String(model)
     bits=split(model, '/'; limit=2)
-    length(bits)==1 && return String(model)
-    haskey(LITELLM_PROVIDER_PREFIXES, bits[1]) || throw(
+    (length(bits)==1 || isempty(bits[2])) && return String(model)
+    head=String(bits[1])
+    provider=get(LITELLM_PROVIDER_PREFIXES, head, nothing)
+    if provider===nothing
+        canonical=canonical_provider(head)
+        for d in providers
+            canonical in spellings(d) && (provider=d.id; break)
+        end
+    end
+    provider===nothing && throw(
         UnknownModelError(
             "unknown or ambiguous foreign provider prefix; use provider:model";
             model=String(model),
         ),
     )
-    return LITELLM_PROVIDER_PREFIXES[bits[1]]*":"*bits[2]
+    return provider*":"*bits[2]
 end
 function resolve_openai_chat(router::LMRouter, model)
-    resolution=resolve(router, openai_chat_model_string(model))
+    resolution=resolve(router, openai_chat_model_string(model; providers=router.config.providers))
     return if resolution.source=="rule" && resolution.provider=="openai"
         resolve(router, "openai-chat:"*resolution.model)
     else

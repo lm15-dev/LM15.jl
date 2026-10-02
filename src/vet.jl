@@ -11,6 +11,7 @@ const VET_OPS=(
     "surface_dump",
     "explain_auth",
     "resolve_model",
+    "resolve_openai_chat_model",
     "sigv4_sign",
     "token_exchange_build",
     "token_exchange_parse",
@@ -125,6 +126,14 @@ function vet_operation(msg)
         registry=haskey(msg, "catalog") ? ModelRegistry(msg["catalog"]) : nothing
         resolution=resolve(
             LMRouter(RouterConfig(; registry, env=get(msg, "env", Dict()))), msg["model"]
+        )
+        return obj(
+            "provider"=>resolution.provider, "model"=>resolution.model, "source"=>resolution.source
+        )
+    elseif op=="resolve_openai_chat_model"
+        # PROTOCOL.md resolve_openai_chat_model: the router's OpenAI-SDK / litellm door.
+        resolution=resolve_openai_chat(
+            LMRouter(RouterConfig(; env=get(msg, "env", Dict()))), msg["model"]
         )
         return obj(
             "provider"=>resolution.provider, "model"=>resolution.model, "source"=>resolution.source
