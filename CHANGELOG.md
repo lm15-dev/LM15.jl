@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+- **A tool with no description works on every provider.** A `FunctionTool` with only a
+  name and parameters was sent with `"description": null`, which Anthropic and Groq refuse
+  with a 400. The description key is now left out when the tool has none (`""` counts as
+  none, as it already does in lm15's own JSON), on every wire, including Gemini cached
+  prefixes, Gemini Live and the OpenAI Realtime session. A tool with a description is sent
+  exactly as before. lm15-contract MAP-17
+  (`changes/2026-10-02-tool-description-absent.md`); contract `f6465c8`.
+
 ## 1.0.0 — 2026-09-30
 
 The first release of lm15 for Julia. Graded by lm15-contract at the commit in

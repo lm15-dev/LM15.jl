@@ -52,6 +52,7 @@ include("judgments.jl")
 include("faults.jl")
 include("ingest_audio.jl")
 include("backend_settings.jl")
+include("tool_description.jl")
 
 @testset "aliases and errors" begin
     @test explain_auth("openai_chat"; env=Dict{String,String}()).provider == "openai-chat"

@@ -59,9 +59,9 @@ function live_setup_frames(l::ProviderLM, c::LiveConfig)
             obj(
                 "type"=>"function",
                 "name"=>t.name,
-                "description"=>t.description,
+                tool_description(t)...,
                 "parameters"=>t.parameters,
-            ) for t in c.tools
+            ) for t in c.tools if t isa FunctionTool
         ]
     )
     merge!(session, something(c.extensions, obj()))

@@ -531,7 +531,7 @@ function openai_payload(l, r; stream=false, chat=false)
         tools=Any[]
         for t in r.tools
             if t isa FunctionTool
-                f=obj("name"=>t.name, "description"=>t.description, "parameters"=>t.parameters)
+                f=obj("name"=>t.name, tool_description(t)..., "parameters"=>t.parameters)
                 c.strict_tools=="include" && (f["strict"]=false)
                 push!(
                     tools,
@@ -780,7 +780,7 @@ function anthropic_payload(l, r; stream=false)
     if !isempty(tools)
         d["tools"]=[
             if t isa FunctionTool
-                obj("name"=>t.name, "description"=>t.description, "input_schema"=>t.parameters)
+                obj("name"=>t.name, tool_description(t)..., "input_schema"=>t.parameters)
             else
                 merge(
                     obj("type"=>get(ANTHROPIC_BUILTINS, t.name, t.name), "name"=>t.name),
@@ -941,10 +941,18 @@ function gemini_openapi_schema(schema)
     end
     return true
 end
+# MAP-17: the description pair of a function tool's wire declaration, or no pair at
+# all. A tool without a description carries no description key: it is never sent as
+# `null` (Anthropic and Groq refuse null with a 400; lm15-contract
+# receipts/2026-10-02-tool-description). `""` is the same value as `nothing` in
+# canonical JSON (omit-empty), so it is left off too. Splat it between the name and
+# the schema to keep the documented key order: `obj("name"=>..., tool_description(t)..., ...)`.
+tool_description(t::FunctionTool) =
+    empty_optional(t.description) ? () : ("description"=>t.description,)
 function gemini_tools(tools)
     functions=[
         obj(
-            "name"=>t.name, "description"=>t.description,
+            "name"=>t.name, tool_description(t)...,
             (gemini_openapi_schema(t.parameters) ? "parameters" : "parametersJsonSchema")=>t.parameters,
         ) for t in tools if t isa FunctionTool
     ]
