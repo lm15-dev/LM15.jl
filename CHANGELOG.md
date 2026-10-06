@@ -1,6 +1,15 @@
 # Changelog
 
-## Unreleased
+## 1.0.0 — 2026-10-06
+
+The first release of lm15 for Julia. Graded by lm15-contract at the commit in
+`CONTRACT_PIN` (`0f3ea82`): 1,901 of 1,901 checks, the same count as Python, TypeScript,
+Rust, Go and R. The registration first opened on 2026-09-26 at 1,788 checks; while it
+waited for review it was moved twice, so the first published version carries what landed
+meanwhile: on 2026-09-30 (contract `57e33d1`, 1,838 checks) the Claude Code and Claude
+default changes, and on 2026-10-06 the two fixes below.
+
+**Long streams and tools without a description:**
 
 - **Long streamed replies no longer fail at the last moment.** `parse_sse` refused a line
   over 64 KiB and an event over 1 MiB, and real streams are larger: OpenAI Responses
@@ -17,14 +26,6 @@
   prefixes, Gemini Live and the OpenAI Realtime session. A tool with a description is sent
   exactly as before. lm15-contract MAP-17
   (`changes/2026-10-02-tool-description-absent.md`); contract `f6465c8`.
-
-## 1.0.0 — 2026-09-30
-
-The first release of lm15 for Julia. Graded by lm15-contract at the commit in
-`CONTRACT_PIN` (`57e33d1`): 1,838 of 1,838 checks, the same count as Python, TypeScript,
-Rust, Go and R. The registration first opened on 2026-09-26 at 1,788 checks; while it
-waited for review it was moved to this commit, which adds the two changes below, so the
-first published version carries them.
 
 **Claude Code and Claude defaults** (lm15-contract
 `changes/2026-09-30-claude-code-client-version.md`):

@@ -2,6 +2,13 @@
 
 ## What 1.0.0 was checked with
 
+Re-checked 2026-10-06 at contract `0f3ea82`, when the pending registration moved again,
+to the commit that carries the SSE size fix (INV-056) and the tool-description fix
+(MAP-17): `Pkg.test()` (Julia 1.12) and the contract, 1,901 of 1,901; a 30 MB image line
+over local HTTP (intact, 1.7 s after the first call); live, `openai:gpt-4.1-mini` streamed
+through the router with a 74 KB system prompt ("OK"; the 2026-09-30 commit refuses it with
+"SSE line exceeds configured limit").
+
 Re-checked 2026-09-30 at contract `57e33d1`, when the pending registration moved to the
 commit that carries the Claude Code and `max_tokens` changes: `Pkg.test()` (Julia 1.12)
 and the contract, 1,838 of 1,838. The rest below is from 2026-09-26, at 1,788 checks;
