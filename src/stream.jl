@@ -23,9 +23,19 @@ function sse_chunk(io::IO)
     end
 end
 
-function parse_sse(emit, io::IO; max_line_bytes=64*1024, max_event_bytes=1024*1024)
-    integer_value(max_line_bytes) > 0 && integer_value(max_event_bytes) > 0 ||
-        throw(ArgumentError("SSE limits must be positive"))
+# INV-056: no size limit by default. A provider sends whole objects as one
+# line (OpenAI Responses repeats the full response, system prompt included,
+# in response.completed; Gemini sends a 4K image as one 29.7 MB line), a
+# non-streamed reply has no limit either, and a stream is accumulated into
+# the whole reply anyway. `max_line_bytes` / `max_event_bytes` are opt-in
+# caps, enforced while a line is still arriving.
+function parse_sse(emit, io::IO; max_line_bytes=nothing, max_event_bytes=nothing)
+    for limit in (max_line_bytes, max_event_bytes)
+        limit === nothing || integer_value(limit) > 0 ||
+            throw(ArgumentError("SSE limits must be positive (or nothing for no limit)"))
+    end
+    maxline = max_line_bytes === nothing ? typemax(Int) : Int(max_line_bytes)
+    maxevent = max_event_bytes === nothing ? typemax(Int) : Int(max_event_bytes)
     name=nothing
     lines=String[]
     line=UInt8[]
@@ -46,25 +56,36 @@ function parse_sse(emit, io::IO; max_line_bytes=64*1024, max_event_bytes=1024*10
             push!(lines, String(lstrip(s[6:end])))
         end
     end
+    isend(b::UInt8) = b == 0x0a || b == 0x0d
     while true
         chunk = sse_chunk(io)
         chunk === nothing && break
-        for b in chunk
-            if previous_cr && b == 0x0a
+        # Copy whole runs up to the next terminator (linear, no per-byte
+        # bookkeeping): a 30 MB line costs one search and one append per read.
+        i = 1
+        n = length(chunk)
+        while i <= n
+            if previous_cr
                 previous_cr = false
-                continue
+                if chunk[i] == 0x0a  # the LF of a CRLF pair
+                    i += 1
+                    continue
+                end
             end
-            push!(line, b)
-            eventbytes+=1
-            length(line)<=max_line_bytes ||
+            j = findnext(isend, chunk, i)
+            stop = j === nothing ? n : j
+            append!(line, view(chunk, i:stop))
+            eventbytes += stop - i + 1
+            length(line)<=maxline ||
                 throw(TransportError("SSE line exceeds configured limit"))
-            eventbytes<=max_event_bytes ||
+            eventbytes<=maxevent ||
                 throw(TransportError("SSE event exceeds configured limit"))
-            previous_cr = b == 0x0d
-            if b in (0x0a, 0x0d)
+            if j !== nothing
+                previous_cr = chunk[j] == 0x0d
                 accept(line)
                 empty!(line)
             end
+            i = stop + 1
         end
     end
     isempty(line) || accept(line)

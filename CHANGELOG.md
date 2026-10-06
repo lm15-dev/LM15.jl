@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- **Long streamed replies no longer fail at the last moment.** `parse_sse` refused a line
+  over 64 KiB and an event over 1 MiB, and real streams are larger: OpenAI Responses
+  repeats the whole response, system prompt included, in its first and last events, and
+  Gemini sends a 4K image as one 29.7 MB line. There is no default limit now, as a
+  non-streamed reply never had one; `max_line_bytes=` / `max_event_bytes=` remain as opt-in
+  caps (`nothing` by default). The reader copies whole runs of bytes instead of one byte at
+  a time (a 30 MB line: 0.5 s, was 3.1 s). lm15-contract INV-056
+  (`changes/2026-10-06-sse-event-bound.md`); contract `0f3ea82`.
 - **A tool with no description works on every provider.** A `FunctionTool` with only a
   name and parameters was sent with `"description": null`, which Anthropic and Groq refuse
   with a 400. The description key is now left out when the tool has none (`""` counts as
