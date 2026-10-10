@@ -1,0 +1,18 @@
+[
+  {
+    "providers": [
+      "gemini"
+    ],
+    "code": "INVALID_ARGUMENT",
+    "reason": "API_KEY_INVALID",
+    "evidence": "receipts/2026-10-10-auth-failed/gemini.json: HTTP 400 {\"error\":{\"status\":\"INVALID_ARGUMENT\",\"message\":\"API key not valid. Please pass a valid API key.\",\"details\":[{\"@type\":\"type.googleapis.com/google.rpc.ErrorInfo\",\"reason\":\"API_KEY_INVALID\",...}]}}"
+  },
+  {
+    "providers": [
+      "xai"
+    ],
+    "code": "invalid-argument",
+    "prefix": "Incorrect API key provided",
+    "evidence": "receipts/2026-10-10-auth-failed/xai.json: HTTP 400 {\"code\":\"invalid-argument\",\"error\":\"Incorrect API key provided. You can obtain an API key from https://console.x.ai.\"}"
+  }
+]

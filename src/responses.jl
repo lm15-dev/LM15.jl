@@ -79,6 +79,34 @@ function pinned_model_not_found(code, message)
             (!haskey(f, :suffix) || endswith(text, f.suffix))
     end
 end
+# MAP-18: the pinned forms of a provider's "this key is not valid" answer that
+# arrive without HTTP 401 (lm15-contract spec/auth-failed.json, carried
+# verbatim; each form has a live receipt). A form with `reason` also needs that
+# reason in a Google google.rpc.ErrorInfo detail of the body.
+const AUTH_FAILED_FORMS=Tuple(
+    (; (Symbol(k)=>v for (k, v) in form if k in ("code", "reason", "prefix", "contains", "suffix"))...) for
+    form in JSON.parse(read(joinpath(@__DIR__, "data", "auth_failed.json"), String))
+)
+function google_error_reasons(err)
+    err isa AbstractDict || return String[]
+    details=get(err, "details", nothing)
+    details isa AbstractVector || return String[]
+    return String[
+        d["reason"] for d in details if d isa AbstractDict && get(d, "reason", nothing) isa AbstractString &&
+        endswith(wire_string(get(d, "@type", "")), "google.rpc.ErrorInfo")
+    ]
+end
+function pinned_auth_failure(code, message, reasons=String[])
+    (code isa AbstractString && !isempty(code)) || return false
+    text=message isa AbstractString ? message : ""
+    return any(AUTH_FAILED_FORMS) do f
+        f.code==code &&
+            (!haskey(f, :reason) || f.reason in reasons) &&
+            (!haskey(f, :prefix) || startswith(text, f.prefix)) &&
+            (!haskey(f, :contains) || occursin(f.contains, text)) &&
+            (!haskey(f, :suffix) || endswith(text, f.suffix))
+    end
+end
 function model_error(message)
     return occursin("model", lowercase(message)) && any(
         s->occursin(s, lowercase(message)),
@@ -169,6 +197,7 @@ function normalize_error(l::ProviderLM, status, body)
         end
     end
     pinned_model_not_found(code, message) && (T=UnsupportedModelError)  # MAP-15
+    pinned_auth_failure(code, message, google_error_reasons(inner)) && (T=AuthError)  # MAP-18: first match wins, so last here
     isempty(message) && (message="HTTP $status") # Do not echo arbitrary error bodies containing credentials.
     requestid=first_nonempty(requestid, string_field(inner, "request_id"))
     hint=get(inner, "retry_after", get(data, "retry_after", nothing))

@@ -910,11 +910,19 @@ const NAMED_MEANING=Dict(
 named_meaning(policy, name) = NAMED_MEANING[policy.credential_policy][name]
 function check_named(policy, name)
     name===nothing && return nothing
-    endswith(policy.credential_policy, "-chain") || throw(NotConfiguredError(
-        "$(policy.provider): a named credential ($(repr(name))) names a cloud identity; this door has no cloud chain";
-        provider=policy.provider))
-    name in NAMED_CREDENTIALS || throw(NotConfiguredError(
-        "$(policy.provider): unknown named credential $(repr(name)); one of $(join(repr.(NAMED_CREDENTIALS), ", "))";
+    # AUTH-1/AUTH-5 (amended 2026-10-10): a value that is not one of the names is
+    # usually a key in the wrong argument; it is never repeated.
+    names=join(repr.(NAMED_CREDENTIALS), ", ")
+    cloud=endswith(policy.credential_policy, "-chain")
+    if !(name in NAMED_CREDENTIALS)
+        what=cloud ? "unknown named credential (one of $names)" :
+            "credential takes the name of a cloud identity ($names), and this door has no cloud chain"
+        throw(NotConfiguredError(
+            "$(policy.provider): $what; the value given is not shown, because it may be a key. If it is your API key, pass it as api_key";
+            provider=policy.provider))
+    end
+    cloud || throw(NotConfiguredError(
+        "$(policy.provider): a named credential ($(repr(name))) names a cloud identity; this door has no cloud chain; pass a key as api_key";
         provider=policy.provider))
     return name
 end
