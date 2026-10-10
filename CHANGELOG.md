@@ -1,13 +1,26 @@
 # Changelog
 
-## 1.0.0 — 2026-10-06
+## 1.0.0 — 2026-10-10
 
 The first release of lm15 for Julia. Graded by lm15-contract at the commit in
-`CONTRACT_PIN` (`0f3ea82`): 1,901 of 1,901 checks, the same count as Python, TypeScript,
+`CONTRACT_PIN` (`880f72c`): 1,904 of 1,904 checks, the same count as Python, TypeScript,
 Rust, Go and R. The registration first opened on 2026-09-26 at 1,788 checks; while it
-waited for review it was moved twice, so the first published version carries what landed
-meanwhile: on 2026-09-30 (contract `57e33d1`, 1,838 checks) the Claude Code and Claude
-default changes, and on 2026-10-06 the two fixes below.
+waited for review it was moved three times, so the first published version carries what
+landed meanwhile: on 2026-09-30 (contract `57e33d1`, 1,838 checks) the Claude Code and
+Claude default changes, on 2026-10-06 (`0f3ea82`, 1,901) the two stream and tool fixes
+below, and on 2026-10-10 the two key fixes that follow.
+
+**A refused key, and a key in the wrong argument:**
+
+- **A wrong or expired key is `AuthError` on every provider.** Gemini and xAI answer a
+  key they refuse with HTTP 400, and lm15 raised `InvalidRequestError`. Gemini is
+  recognized by the reason its error carries (`API_KEY_INVALID`), xAI by its exact
+  sentence; any other Gemini 400 is still `InvalidRequestError`. lm15-contract MAP-18
+  (`changes/2026-10-10-bad-key-and-misplaced-key.md`); contract `880f72c`.
+- **A key passed as `credential=` is never printed.** `credential=` takes the name of a
+  cloud identity; a key given there was repeated in the refusal, and so in logs. The
+  refusal now says the value is not shown because it may be a key, and that a key goes in
+  `api_key`.
 
 **Long streams and tools without a description:**
 

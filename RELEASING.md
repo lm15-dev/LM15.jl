@@ -2,6 +2,10 @@
 
 ## What 1.0.0 was checked with
 
+Re-checked 2026-10-10 at contract `880f72c`, when the pending registration moved to the
+commit that carries the refused-key fix (MAP-18) and the misplaced-key refusal (AUTH-1,
+AUTH-5): `Pkg.test()` (Julia 1.12) and the contract, 1,904 of 1,904.
+
 Re-checked 2026-10-06 at contract `0f3ea82`, when the pending registration moved again,
 to the commit that carries the SSE size fix (INV-056) and the tool-description fix
 (MAP-17): `Pkg.test()` (Julia 1.12) and the contract, 1,901 of 1,901; a 30 MB image line
