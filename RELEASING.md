@@ -2,6 +2,9 @@
 
 ## What 1.0.0 was checked with
 
+Re-checked 2026-10-10 at contract `8eedbae` (a structured answer reads through `text`; a
+budget alone fills `effort`): `Pkg.test()` and the contract, 1,904 of 1,904.
+
 Re-checked 2026-10-10 at contract `880f72c`, when the pending registration moved to the
 commit that carries the refused-key fix (MAP-18) and the misplaced-key refusal (AUTH-1,
 AUTH-5): `Pkg.test()` (Julia 1.12) and the contract, 1,904 of 1,904.

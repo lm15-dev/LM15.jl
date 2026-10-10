@@ -3,12 +3,20 @@
 ## 1.0.0 — 2026-10-10
 
 The first release of lm15 for Julia. Graded by lm15-contract at the commit in
-`CONTRACT_PIN` (`880f72c`): 1,904 of 1,904 checks, the same count as Python, TypeScript,
+`CONTRACT_PIN` (`8eedbae`): 1,904 of 1,904 checks, the same count as Python, TypeScript,
 Rust, Go and R. The registration first opened on 2026-09-26 at 1,788 checks; while it
 waited for review it was moved three times, so the first published version carries what
 landed meanwhile: on 2026-09-30 (contract `57e33d1`, 1,838 checks) the Claude Code and
 Claude default changes, on 2026-10-06 (`0f3ea82`, 1,901) the two stream and tool fixes
 below, and on 2026-10-10 the two key fixes that follow.
+
+**A structured answer and a thinking budget (2026-10-10, contract `8eedbae`):**
+
+- `text(response)` and `parse_json(response)` read a structured answer that came back as a
+  `DataPart` (a schema with a boolean or enum property is a judgment request, answered that
+  way); they returned `nothing` and failed.
+- `Reasoning(; thinking_budget=1024)` works without `effort`: the highest level whose budget is
+  at or below the given one, `"minimal"` below 1024. `effort="none"` says lm15 spells it `"off"`.
 
 **A refused key, and a key in the wrong argument:**
 
