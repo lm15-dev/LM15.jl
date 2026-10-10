@@ -127,6 +127,15 @@ end
 const EFFORT_BUDGETS=Dict(
     "minimal"=>1024, "low"=>2048, "medium"=>8192, "high"=>16384, "xhigh"=>24576, "max"=>32768
 )
+# MAP-7 rule 3 read the other way (amended 2026-10-10): the highest level whose
+# budget is at or below `budget`, "minimal" below 1024.
+function effort_for_budget(budget::Integer)
+    level="minimal"
+    for name in ("minimal", "low", "medium", "high", "xhigh", "max")
+        EFFORT_BUDGETS[name] <= budget && (level=name)
+    end
+    return level
+end
 function has_cache_options(model)
     m=match(r"^gpt-(\d+)\.(\d+)", lowercase(model))
     return m !== nothing && (parse(Int, m[1]), parse(Int, m[2])) >= (5, 6)

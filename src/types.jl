@@ -27,6 +27,21 @@ macro canonical(head, body)
             push!(keywords, field)
         end
         normalized = :(normalize_field($name, $(QuoteNode(field)), $field, $typ))
+        if name === :Reasoning && field === :effort
+            # A budget alone fills effort from MAP-7 rule 3's table read the
+            # other way (amended 2026-10-10).
+            normalized = :(
+                if effort === nothing
+                    thinking_budget === nothing && throw(ArgumentError(
+                        "Reasoning needs effort (one of off, minimal, low, medium, high, xhigh, max) or thinking_budget; leave reasoning unset to let the model decide"))
+                    effort_for_budget(normalize_field($name, :thinking_budget, thinking_budget, Maybe{Int}))
+                elseif effort == "none"
+                    throw(ArgumentError("unsupported reasoning effort: none (lm15 spells \"none\" as effort=\"off\")"))
+                else
+                    $normalized
+                end
+            )
+        end
         if name === :Usage && field === :total_tokens
             normalized = :(
                 if total_tokens === nothing &&
@@ -150,7 +165,7 @@ end
     parallel::Maybe{Bool} = nothing
 end
 @canonical Reasoning begin
-    effort::String
+    effort::String = nothing
     thinking_budget::Maybe{Int} = nothing
     summary::Maybe{String} = nothing
 end
@@ -584,7 +599,14 @@ function text(m::Message)
     return join((p.text for p in m.parts), "\n")
 end
 function text(r::Response)
-    all(p -> p isa Union{TextPart,ThinkingPart,CitationPart}, r.message.parts) || return nothing
+    if !all(p -> p isa Union{TextPart,ThinkingPart,CitationPart}, r.message.parts)
+        # A structured answer that came back as a DataPart (MAP-14) reads as its
+        # compact JSON, so text, parse_json and json work whichever form the wire
+        # gave it (types.md §Response, amended 2026-10-10).
+        data = parts_of(DataPart, r.message)
+        ok = length(data) == 1 && all(p -> p isa Union{DataPart,ThinkingPart,CitationPart}, r.message.parts)
+        return ok ? data_part_text(only(data)) : nothing
+    end
     parts = parts_of(TextPart, r.message)
     return isempty(parts) ? nothing : join((p.text for p in parts), "\n")
 end
