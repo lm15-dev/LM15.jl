@@ -501,10 +501,36 @@ function meta_mint(ctx, identity)
         action = https_url(get(reply.body, "action_url", nothing); http_ok=true)
         throw(LoginDenied("Meta did not issue an API key" * (action === nothing ? "" : "; complete setup at $action")))
     end
+    base_url = meta_api_base(reply.body)
     lifetime = Float64(LOGIN_PROFILES["meta"]["methods"]["device"]["tokens"]["lifetime_s"])
     now = now_ms(ctx)
-    return JSONObject("type" => "oauth", "access" => key, "refresh" => identity, "issued_at" => now,
+    material = JSONObject("type" => "oauth", "access" => key, "refresh" => identity, "issued_at" => now,
         "lifetime_s" => lifetime, "expires" => round(Int64, now + lifetime * 1000))
+    base_url === nothing || (material["base_url"] = base_url)
+    return LoginResult(material, "Meta (Muse subscription)"; account_label=meta_plan(reply.body), renewal="remint")
+end
+# The mint's `base_url` when the key may go there: https, a meta.ai host, no
+# userinfo or query; `nothing` when absent; anything else is refused before the
+# key is sent (lm15-contract changes/2026-10-12-muse-code-subscription.md D1).
+function meta_api_base(body)
+    value = get(body, "base_url", nothing)
+    value === nothing && return nothing
+    m = value isa AbstractString ? match(r"^https://([^/?#]*)([^?#]*)$"i, value) : nothing
+    authority = m === nothing ? "" : lowercase(m.captures[1])
+    host = replace(authority, r":[0-9]+$" => "")
+    ok = m !== nothing && !occursin('@', authority) && (host == "meta.ai" || endswith(host, ".meta.ai"))
+    ok || throw(LoginDenied("Meta named an API address outside meta.ai for the minted key; refusing to send it there"))
+    return String(rstrip(value, '/'))
+end
+# Display text for the account's plan; `nothing` when the reply is silent.
+function meta_plan(body)
+    active = get(body, "is_subs_active", nothing)
+    if active === true
+        tier = get(body, "subs_tier_name", nothing)
+        return tier isa AbstractString && !isempty(tier) ? String(tier) : "Muse Code subscription"
+    end
+    active === false && return "no Muse Code subscription (pay-as-you-go)"
+    return nothing
 end
 function flow_login(::MetaFlow, ctx, m::LoginMethod, settings, answers)
     m.id == "device" || throw(ArgumentError(m.id))
@@ -533,14 +559,15 @@ function flow_login(::MetaFlow, ctx, m::LoginMethod, settings, answers)
         throw(LoginDenied("Meta device token request failed (HTTP $(r.status))"))
     end
     identity = run_device_flow(ctx, poll; interval_s=interval, expires_in_s=expires_in)
-    return LoginResult(meta_mint(ctx, identity), "Meta (Muse subscription)"; renewal="remint")
+    return meta_mint(ctx, identity)
 end
 function flow_renew(::MetaFlow, ctx, material, settings)
     identity = string_body(material, "refresh")
     identity === nothing && throw(LoginDenied("Meta credential has no identity token to re-mint with"))
-    return LoginResult(meta_mint(ctx, identity), "Meta (Muse subscription)"; renewal="remint")
+    return meta_mint(ctx, identity)
 end
-flow_request_auth(::MetaFlow, material, settings) = RequestAuth(ApiKey(; value=material["access"]))
+flow_request_auth(::MetaFlow, material, settings) =
+    RequestAuth(ApiKey(; value=material["access"]); base_url=string_body(material, "base_url"))
 
 # ─── OpenRouter (PKCE; the code is exchanged for a minted API key) ─────────
 struct OpenRouterFlow <: ProviderFlow end
