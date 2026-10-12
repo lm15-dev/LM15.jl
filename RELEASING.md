@@ -2,6 +2,10 @@
 
 ## What 1.0.0 was checked with
 
+Re-checked 2026-10-12 at contract `88bb560`, when the pending registration moved to the
+commit that carries the Muse Code subscription through the Meta login: `Pkg.test()` and
+the contract, 1,905 of 1,905.
+
 Re-checked 2026-10-10 at contract `8eedbae` (a structured answer reads through `text`; a
 budget alone fills `effort`): `Pkg.test()` and the contract, 1,904 of 1,904.
 

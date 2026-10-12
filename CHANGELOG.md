@@ -1,14 +1,23 @@
 # Changelog
 
-## 1.0.0 — 2026-10-10
+## 1.0.0 — 2026-10-12
 
 The first release of lm15 for Julia. Graded by lm15-contract at the commit in
-`CONTRACT_PIN` (`8eedbae`): 1,904 of 1,904 checks, the same count as Python, TypeScript,
+`CONTRACT_PIN` (`88bb560`): 1,905 of 1,905 checks, the same count as Python, TypeScript,
 Rust, Go and R. The registration first opened on 2026-09-26 at 1,788 checks; while it
-waited for review it was moved three times, so the first published version carries what
+waited for review it was moved five times, so the first published version carries what
 landed meanwhile: on 2026-09-30 (contract `57e33d1`, 1,838 checks) the Claude Code and
 Claude default changes, on 2026-10-06 (`0f3ea82`, 1,901) the two stream and tool fixes
-below, and on 2026-10-10 the two key fixes that follow.
+below, on 2026-10-10 (`880f72c` and `8eedbae`, 1,904) the two key fixes and the structured
+answer and thinking budget, and on 2026-10-12 (`88bb560`, 1,905) the Muse Code
+subscription.
+
+**The Muse Code subscription through the Meta login (2026-10-12, contract `88bb560`):**
+
+- Requests go to the address the key mint names, only when it is an https `meta.ai` host
+  (anything else is refused before the key is sent); the connection's `account_label` names
+  the plan. `meta:muse-wonder-full-1.0` answers on a Power or Maximum Usage plan. The method
+  stays unverified: Meta's terms reserve this key for Muse Code.
 
 **A structured answer and a thinking budget (2026-10-10, contract `8eedbae`):**
 
