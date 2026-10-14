@@ -1128,9 +1128,12 @@ function build_request_adapted(l::ProviderLM, r::Request; stream=false)
     else
         url=l.base_url*"/"*endpoint
     end
-    return emit(
-        l; url, payload, params, headers=base_headers(l; request=r), endpoint, stream, model=r.model
-    ), records
+    headers=base_headers(l; request=r)
+    # The caller put an image in the request: that is the opt-in the header exists for
+    # (changes/2026-10-14-jev-images.md D3).
+    l.dialect=="typesafe" && haskey(payload, "assets") &&
+        (headers[lowercase(TYPESAFE_IMAGES_HEADER)]="true")
+    return emit(l; url, payload, params, headers, endpoint, stream, model=r.model), records
 end
 """
     plan(client, request)

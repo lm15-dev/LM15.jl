@@ -3,8 +3,10 @@
 # user part is Jev's `state`, verbatim; the judgment properties of the json_schema
 # become its `questions` (MAP-14 §2); the answers come back as one DataPart with a
 # distribution per judgment and method "provider_classification" (§3). Jev generates
-# no text: a request without judgments, with tools, or with media is refused before
-# the wire.
+# no text: a request without judgments or with tools is refused before the wire.
+# Images reach Jev as top-level `assets` named by a reference string written where the
+# image belongs in the state (changes/2026-10-14-jev-images.md); audio, video and
+# documents are refused (MAP-10).
 
 const TYPESAFE_BASE_URL = "https://api.typesafe.ai"
 # Config knobs with no home on the systemone wire: dropped with a record.
@@ -12,10 +14,37 @@ const TYPESAFE_DROPPED = (
     :max_tokens, :temperature, :top_p, :top_k, :stop, :seed, :frequency_penalty,
     :presence_penalty, :reasoning, :logprobs, :store, :user_id, :service_tier, :cache,
 )
+# Images are off unless each request that carries one sends this header (live 400
+# without it, 2026-10-14).
+const TYPESAFE_IMAGES_HEADER = "TypeSafe-Danger-Zone-Images"
+# The asset formats systemone reads: PNG and JPEG, nothing else.
+const TYPESAFE_IMAGE_FORMATS = Dict("image/png"=>"png", "image/jpeg"=>"jpg", "image/jpg"=>"jpg")
+# The n-th image's reference (1-based, in part order); `>` closes it so
+# `<lm15-image-1>` never matches inside `<lm15-image-10>`.
+typesafe_image_reference(n) = "<lm15-image-$n>"
+# An image reaches systemone as inline PNG or JPEG bytes, or not at all (MAP-10 rule 1);
+# lm15 never fetches or converts media.
+function typesafe_check_image(l, p::ImagePart, at)
+    if p.url!==nothing || p.file_id!==nothing
+        how=p.url!==nothing ? "a URL" : "a file id"
+        refuse(l.provider, at, "systemone takes image bytes, not $how; fetch the image and pass its data or path (changes/2026-10-14-jev-images.md)")
+    end
+    haskey(TYPESAFE_IMAGE_FORMATS, lowercase(p.media_type)) || refuse(l.provider, at,
+        "systemone reads PNG or JPEG images, got $(repr(p.media_type)); convert the image first (lm15 never converts media)")
+    return nothing
+end
+# The state and its assets (2026-09-19 D1/D2; 2026-10-14 D1/D2): one text or data part
+# verbatim, one image its reference, a message holding an image beside other parts the
+# array of its parts in order.
 function typesafe_state(l, r::Request)
     for (i, m) in enumerate(r.messages), (j, p) in enumerate(m.parts)
-        p isa Union{TextPart,DataPart} || refuse(l.provider, "messages[$(i-1)].parts[$(j-1)]",
-            "a $(kind(p)) part has no slot on the systemone wire (MAP-10); Jev reads text or data")
+        at="messages[$(i-1)].parts[$(j-1)]"
+        if p isa ImagePart
+            typesafe_check_image(l, p, at)
+        else
+            p isa Union{TextPart,DataPart} || refuse(l.provider, at,
+                "a $(kind(p)) part has no slot on the systemone wire (MAP-10); Jev reads text, data, or PNG/JPEG images")
+        end
     end
     r.system===nothing || refuse(l.provider, "system",
         "Jev has no system prompt; put context in the state as a named key (user(data(Dict(\"policy\" => ..., \"note\" => ...)))), or the framing in each question's description (changes/2026-09-19-jev-state.md D2)")
@@ -23,10 +52,20 @@ function typesafe_state(l, r::Request)
         "Jev judges one state, got $(length(r.messages)) messages; put a transcript in the state as an array or object (user(data(Dict(\"messages\" => [...])))), where a question can point at a turn with a backtick path")
     m=only(r.messages)
     m.role=="user" || refuse(l.provider, "messages[0].role", "Jev's state is a user message, got role $(repr(m.role))")
-    length(m.parts)==1 || refuse(l.provider, "messages[0].parts",
+    has_image=any(p->p isa ImagePart, m.parts)
+    length(m.parts)==1 || has_image || refuse(l.provider, "messages[0].parts",
         "Jev's state is one text or data part, got $(length(m.parts)) parts; put several pieces in one data part as named keys")
-    p=only(m.parts)
-    return p isa TextPart ? p.text : p.value
+    assets=JSONObject()
+    function element(p)
+        p isa TextPart && return p.text
+        p isa DataPart && return p.value
+        reference=typesafe_image_reference(length(assets)+1)
+        assets[reference]=obj("type"=>"image", "format"=>TYPESAFE_IMAGE_FORMATS[lowercase(p.media_type)],
+            "data_base64"=>media_base64(p))
+        return reference
+    end
+    state=length(m.parts)==1 ? element(only(m.parts)) : Any[element(p) for p in m.parts]
+    return state, assets
 end
 function typesafe_questions(l, r::Request)
     f=r.config.response_format
@@ -75,7 +114,10 @@ function typesafe_payload(l, r::Request; stream=false)
         adapt!("config.$name", "dropped", "no such control on the systemone wire (Jev returns decisions, not samples)"; asked)
     end
     questions=typesafe_questions(l, r)
-    d=obj("model"=>r.model, "state"=>typesafe_state(l, r), "questions"=>questions)
+    state, assets=typesafe_state(l, r)
+    d=obj("model"=>r.model, "state"=>state)
+    isempty(assets) || (d["assets"]=assets)
+    d["questions"]=questions
     for (key, value) in something(c.extensions, obj())
         key=="n" && value isa Real && value>1 &&
             refuse(l.provider, "config.extensions.n", "n > 1 has no canonical multiple-response representation")

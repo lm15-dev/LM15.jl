@@ -87,3 +87,37 @@ end
     @test data(r) == Dict("ageing" => false) && probabilities(r) === nothing && isempty(r.adaptations) && calls[] == 1
     @test resolve(LMRouter(), "jev-latest").provider == "typesafe"
 end
+
+@testset "judgments: images reach Jev as assets named in the state" begin
+    # changes/2026-10-14-jev-images.md D1-D4
+    lm = TypeSafeLM(; api_key="k")
+    fmt = Config(; response_format=judgments("circle" => yes_no("Is there a red circle in the image?")))
+    png, jpg = "iVBORw0KGgo=", "/9j/4AAQ"
+    build(parts) = build_request(lm, Request("jev-latest", user(parts); config=fmt))
+    header(w) = Dict(lowercase(k) => v for (k, v) in w.headers)
+    w = build(image(; data=png, media_type="image/png"))
+    body = JSON.parse(String(copy(w.body)))
+    @test body["state"] == "<lm15-image-1>"
+    @test body["assets"] == Dict("<lm15-image-1>" => Dict("type" => "image", "format" => "png", "data_base64" => png))
+    @test header(w)["typesafe-danger-zone-images"] == "true"
+    @test isempty(plan(lm, Request("jev-latest", user(image(; data=png, media_type="image/png")); config=fmt)))
+    body = JSON.parse(String(copy(build([text("A red ball."), image(; data=png, media_type="image/png"), data(Dict("k" => 1)),
+        image(; data=jpg, media_type="image/jpeg")]).body)))
+    @test body["state"] == Any["A red ball.", "<lm15-image-1>", Dict("k" => 1), "<lm15-image-2>"]
+    @test body["assets"]["<lm15-image-2>"]["format"] == "jpg"
+    plain = build("no picture")
+    @test !haskey(header(plain), "typesafe-danger-zone-images") && !haskey(JSON.parse(String(copy(plain.body))), "assets")
+    for (part, why) in [
+        (image(; url="https://example.com/a.png"), "not a URL"),
+        (image(; file_id="file_1"), "not a file id"),
+        (image(; data="UklGRg==", media_type="image/webp"), "PNG or JPEG"),
+        (audio(; data="UklGRg=="), "no slot on the systemone wire"),
+    ]
+        err = try
+            build([text("x"), part]); nothing
+        catch e
+            e
+        end
+        @test err isa UnsupportedFeatureError && err.feature == "messages[0].parts[1]" && occursin(why, sprint(showerror, err))
+    end
+end
