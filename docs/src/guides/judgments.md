@@ -28,6 +28,26 @@ After `answer = complete(router, req)`:
   server that scores named tokens);
 - `expected_level(probabilities(answer)["quality"])` is Σ p·level for an ordered judgment.
 
+## Ask where something is: a bounding box
+
+`bounding_box` asks where in the picture something is. The answer is four numbers, each
+a fraction of the picture from its top-left corner: `top` and `bottom` of its height,
+`left` and `right` of its width. Multiply by the picture's size in pixels to draw or crop.
+
+```julia
+format = judgments(
+    "mug" => bounding_box("the coffee mug"),
+    "mug_visible" => yes_no("Is there a coffee mug in the image?"),
+)
+req = Request("typesafe:jev-preview", user(image(; path="kitchen.jpg")); config=Config(; response_format=format))
+```
+
+`data(answer)["mug"]` is then e.g. `Dict("top" => 0.25, "bottom" => 0.82, "left" => 0.44,
+"right" => 0.84)`. A box is always four edges, even when the thing is not there: ask a
+`yes_no` beside it, as above. A box has no probabilities. On TypeSafe it needs Jev 1.14
+(`jev-preview` or `jev-1.14.0`; `jev-latest` answers "Invalid request."); on other
+providers the model writes the four numbers, and how close they are depends on the model.
+
 ## Which providers measure a distribution
 
 | Where | What you get |

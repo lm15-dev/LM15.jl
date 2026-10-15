@@ -90,6 +90,7 @@ judgments
 choice
 yes_no
 score
+bounding_box
 judgments_in_schema
 request_judgments
 expected_level

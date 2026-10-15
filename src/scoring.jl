@@ -15,7 +15,7 @@
 const JUDGMENT_PREFILL = "Answer:"
 scores_named_tokens(l, r) = l.dialect == "openai-chat" && effective_compat(l, r).token_scoring == "logprob_token_ids"
 judgments_via_token_scoring(l, r::Request) = scores_named_tokens(l, r) &&
-    r.config.probabilities in ("if_available", "required") && !isempty(request_judgments(r))
+    r.config.probabilities in ("if_available", "required") && !isempty(request_measurable_judgments(r))
 
 function judgment_ask(j::Judgment)
     lines = String[]
@@ -100,7 +100,8 @@ function validate_judgment_scoring(l, r::Request)
         no("config.extensions.$name", "unknown measurement extension semantics; dropping it could lose privacy, money or action controls")
     end
 end
-judgment_mixed(r::Request) = !isempty(non_judgment_properties(r.config.response_format["schema"], request_judgments(r)))
+# A bounding box is never scored: like ordinary output, the generated call answers it.
+judgment_mixed(r::Request) = !isempty(non_judgment_properties(r.config.response_format["schema"], request_measurable_judgments(r)))
 generated_request(r::Request) = reconstruct(r; config=reconstruct(r.config; probabilities="off"))
 function judgment_stream_policy(l, r::Request)
     r.config.probabilities == "required" && refuse(l.provider, "config.probabilities",
@@ -207,7 +208,7 @@ function judgment_generated_value(l, r::Request, response::Response; unmeasured=
         value = strict_json_parse(t.text)
         value isa AbstractDict || throw(ArgumentError("generated judgment answer needs a JSON object"))
         schema = r.config.response_format["schema"]
-        measured = request_judgments(r)
+        measured = request_measurable_judgments(r)
         for name in get(schema, "required", ())
             (unmeasured || !haskey(measured, name)) && !haskey(value, name) &&
                 throw(ArgumentError("generated answer is missing required property $(repr(name))"))
@@ -273,7 +274,7 @@ function judgment_unmeasured(l, r::Request, adaptations, usage)
 end
 function judgment_complete(l, r::Request)
     adaptations = judgment_adaptations(l, r)
-    found = request_judgments(r)
+    found = request_measurable_judgments(r)
     tokenized = Any[]
     calls = 0
     for (_, j) in found

@@ -6,7 +6,8 @@
 # no text: a request without judgments or with tools is refused before the wire.
 # Images reach Jev as top-level `assets` named by a reference string written where the
 # image belongs in the state (changes/2026-10-14-jev-images.md); audio, video and
-# documents are refused (MAP-10).
+# documents are refused (MAP-10). A bounding-box judgment is Jev's Box question; its
+# answer is the box verbatim, with no distribution (changes/2026-10-15-bounding-box.md).
 
 const TYPESAFE_BASE_URL = "https://api.typesafe.ai"
 # Config knobs with no home on the systemone wire: dropped with a record.
@@ -14,8 +15,9 @@ const TYPESAFE_DROPPED = (
     :max_tokens, :temperature, :top_p, :top_k, :stop, :seed, :frequency_penalty,
     :presence_penalty, :reasoning, :logprobs, :store, :user_id, :service_tier, :cache,
 )
-# Images are off unless each request that carries one sends this header (live 400
-# without it, 2026-10-14).
+# Images and Box questions are off unless each request that carries one sends this
+# header (live 400 without it: 2026-10-14 for an image, 2026-10-15 for a Box question
+# with no image).
 const TYPESAFE_IMAGES_HEADER = "TypeSafe-Danger-Zone-Images"
 # The asset formats systemone reads: PNG and JPEG, nothing else.
 const TYPESAFE_IMAGE_FORMATS = Dict("image/png"=>"png", "image/jpeg"=>"jpg", "image/jpg"=>"jpg")
@@ -88,6 +90,9 @@ function typesafe_questions(l, r::Request)
         end
         questions[name]=if j.kind=="boolean"
             obj("type"=>"noul", "instructions"=>instruction)
+        elseif j.kind=="box"
+            # Jev's Box takes no criteria (docs.typesafe.ai/primitives/box).
+            obj("type"=>"box", "instructions"=>instruction)
         elseif j.kind=="choice"
             length(j.keys)<=MAX_CHOICE_KEYS || refuse(l.provider, "config.response_format.schema.properties.$name",
                 "a Jev choice takes at most $MAX_CHOICE_KEYS keys, got $(length(j.keys))")
@@ -145,8 +150,20 @@ function parse_typesafe_response(l, r::Request, d, response::HttpResponse)
         answer=answers[name]
         path="answers.$name"
         answer isa AbstractDict || throw(invalid(path, "expected an answer object"))
-        expected=Dict("boolean"=>"noul", "choice"=>"choice", "ordered"=>"score")[j.kind]
+        expected=Dict("boolean"=>"noul", "choice"=>"choice", "ordered"=>"score", "box"=>"box")[j.kind]
         get(answer, "type", nothing)==expected || throw(invalid("$path.type", "expected $(repr(expected))"))
+        if j.kind=="box"
+            # The four edges verbatim, in Jev's order; a box has no distribution, and its
+            # `confidence` stays in provider_data.
+            edges=get(answer, "box", nothing)
+            edges isa AbstractDict && length(edges)==length(BOX_EDGES) && all(e->haskey(edges, e), BOX_EDGES) ||
+                throw(invalid("$path.box", "expected exactly top, bottom, left and right"))
+            for e in BOX_EDGES
+                probability(edges[e], "$path.box.$e")  # a fraction: finite, in [0, 1]
+            end
+            value[name]=JSONObject(e=>edges[e] for e in BOX_EDGES)  # numbers as written
+            continue
+        end
         if j.kind=="boolean"
             p=probability(get(answer, "noul", nothing), "$path.noul")
             value[name]=p>=0.5

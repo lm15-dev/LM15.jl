@@ -2,7 +2,10 @@
 # changes/2026-09-17-judgments.md). A judgment is a top-level property of a
 # `json_schema` response_format that declares its answer set: a boolean, a string
 # `enum`/`anyOf`-of-`const`, or an ordered integer `enum`/`anyOf`-of-`const`
-# `0..n-1`. This file reads the convention off a schema (§1), rewrites judgment
+# `0..n-1` — or, since changes/2026-10-15-bounding-box.md, a bounding box: an object
+# of the four numbers `top`, `bottom`, `left`, `right` (fractions of the image's height
+# and width). A box declares no keys, so it is answered, never scored.
+# This file reads the convention off a schema (§1), rewrites judgment
 # properties for the two wires that need it (§2), folds a model's JSON text into a
 # DataPart (§3), and offers the helpers that emit the convention. No network here.
 
@@ -10,14 +13,23 @@ const MAX_ORDERED_LEVELS = 10  # Jev's Score ceiling
 const MAX_CHOICE_KEYS = 255    # Jev's Choice ceiling
 const JUDGMENT_METHODS = ("provider_classification", "candidate_sequence_likelihood")
 const PROBABILITY_POLICIES = ("off", "if_available", "required")
+# A box's edges, in Jev's order (changes/2026-10-15-bounding-box.md D1): fractions of
+# the image from its top-left corner, top/bottom of its height, left/right of its width.
+const BOX_EDGES = ("top", "bottom", "left", "right")
+const BOX_EDGE_DESCRIPTIONS = (
+    "Top edge, as a fraction of the image's height from the top, from 0 to 1",
+    "Bottom edge, as a fraction of the image's height from the top, from 0 to 1",
+    "Left edge, as a fraction of the image's width from the left, from 0 to 1",
+    "Right edge, as a fraction of the image's width from the left, from 0 to 1",
+)
 
 """
     Judgment
 
 One declared judgment read off a schema property: `name`, `kind` (`"boolean"`,
-`"choice"` or `"ordered"`), its answer `keys` (strings; `"true"`/`"false"`, the choice
-keys, or `"0"`…`"n-1"`), the property's `instruction` (its description), and the per-key
-`descriptions` and `titles`.
+`"choice"`, `"ordered"` or `"box"`), its answer `keys` (strings; `"true"`/`"false"`, the
+choice keys, `"0"`…`"n-1"`, or none for a box), the property's `instruction` (its
+description), and the per-key `descriptions` and `titles`.
 """
 struct Judgment
     name::String
@@ -28,6 +40,9 @@ struct Judgment
     titles::Dict{String,Maybe{String}}
 end
 is_ordered(j::Judgment) = j.kind == "ordered"
+# Whether a distribution over declared keys exists to measure: a box declares no keys,
+# so it is answered, never scored (MAP-14 §1).
+is_measurable(j::Judgment) = j.kind != "box"
 nonempty_string(v) = v isa AbstractString && !isempty(v) ? String(v) : nothing
 
 function const_branches(prop)
@@ -36,9 +51,19 @@ function const_branches(prop)
     all(b -> b isa AbstractDict && haskey(b, "const"), branches) || return nothing
     return branches
 end
+# An object whose properties are exactly the four edges, each a `number`
+# (changes/2026-10-15-bounding-box.md D1). Other keywords are the caller's, verbatim.
+function is_box(prop)
+    get(prop, "type", "object") == "object" || return false
+    props = get(prop, "properties", nothing)
+    props isa AbstractDict && length(props) == length(BOX_EDGES) || return false
+    return all(e -> haskey(props, e) && props[e] isa AbstractDict && get(props[e], "type", nothing) == "number", BOX_EDGES)
+end
 function judgment_of(name, prop)
     prop isa AbstractDict || return nothing
     instruction = nonempty_string(get(prop, "description", nothing))
+    is_box(prop) && return Judgment(name, "box", String[], instruction,
+        Dict{String,Maybe{String}}(), Dict{String,Maybe{String}}())
     if get(prop, "type", nothing) == "boolean"
         return Judgment(name, "boolean", ["true", "false"], instruction,
             Dict{String,Maybe{String}}("true" => nothing, "false" => nothing), Dict{String,Maybe{String}}())
@@ -105,6 +130,14 @@ function request_judgments(r::Request)
     f isa AbstractDict && get(f, "type", nothing) == "json_schema" || return OrderedDict{String,Judgment}()
     return judgments_in_schema(get(f, "schema", nothing))
 end
+"""
+    measurable_judgments(found)
+
+The judgments with declared keys: the ones a distribution can be measured for (boxes
+are left out).
+"""
+measurable_judgments(found) = OrderedDict{String,Judgment}(n => j for (n, j) in found if is_measurable(j))
+request_measurable_judgments(r::Request) = measurable_judgments(request_judgments(r))
 function non_judgment_properties(schema, found)
     props = schema isa AbstractDict ? get(schema, "properties", nothing) : nothing
     props isa AbstractDict || return String[]
@@ -112,10 +145,11 @@ function non_judgment_properties(schema, found)
 end
 
 # §2 on a wire that measures nothing: `if_available` records `dropped`;
-# `required` refuses before the wire (MAP-13 condition b).
+# `required` refuses before the wire (MAP-13 condition b). A request whose judgments are
+# all boxes asked for nothing measurable: nothing is recorded and nothing refused.
 function note_unmeasurable_probabilities(r::Request, provider)
     policy = r.config.probabilities
-    (policy === nothing || policy == "off" || isempty(request_judgments(r))) && return nothing
+    (policy === nothing || policy == "off" || isempty(request_measurable_judgments(r))) && return nothing
     policy == "required" && refuse(provider, "config.probabilities",
         "config.probabilities='required' but this wire cannot measure a distribution over the declared keys (it returns a pick only); use 'if_available' or a provider that can (typesafe, or a vLLM server that honours logprob_token_ids)")
     adapt!("config.probabilities", "dropped",
@@ -150,7 +184,7 @@ function gemini_schema(schema, found)
     out = deepcopy_json(schema)
     for (name, j) in found
         prop = out["properties"][name]
-        (j.kind == "boolean" || !haskey(prop, "anyOf")) && continue
+        (j.kind in ("boolean", "box") || !haskey(prop, "anyOf")) && continue
         delete!(prop, "anyOf")
         prop["type"] = is_ordered(j) ? "integer" : "string"
         prop["enum"] = is_ordered(j) ? Any[parse(Int, k) for k in j.keys] : Any[k for k in j.keys]
@@ -253,6 +287,29 @@ end
 A yes/no judgment property (keys `true` and `false`).
 """
 yes_no(instruction::AbstractString) = obj("type" => "boolean", "description" => String(instruction))
+"""
+    bounding_box(instruction)
+
+A bounding-box judgment: where in the request's image is what `instruction` describes
+(changes/2026-10-15-bounding-box.md). The answer is `{top, bottom, left, right}`, each a
+fraction from 0 to 1 of the image's height (`top`, `bottom`) or width (`left`,
+`right`), measured from the top-left corner; multiply by the image's size in pixels to
+draw or crop. There is no "not found" answer: ask a [`yes_no`](@ref) beside it. On
+`typesafe` this is Jev's Box question and needs Jev 1.14 (`"jev-preview"` or
+`"jev-1.14.0"`); elsewhere it is ordinary structured output.
+
+The edges carry no `minimum`/`maximum`: Anthropic refuses both on a number (HTTP 400,
+receipted 2026-10-15); the range is in each edge's description.
+
+```julia
+fmt = judgments(mug=bounding_box("the coffee mug"), mug_visible=yes_no("Is there a mug?"))
+```
+"""
+function bounding_box(instruction::AbstractString)
+    edges = JSONObject(e => obj("type" => "number", "description" => d) for (e, d) in zip(BOX_EDGES, BOX_EDGE_DESCRIPTIONS))
+    return obj("type" => "object", "description" => String(instruction), "properties" => edges,
+        "required" => Any[e for e in BOX_EDGES], "additionalProperties" => false)
+end
 """
     score(instruction, levels)
 

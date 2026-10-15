@@ -121,3 +121,87 @@ end
         @test err isa UnsupportedFeatureError && err.feature == "messages[0].parts[1]" && occursin(why, sprint(showerror, err))
     end
 end
+
+@testset "judgments: bounding boxes (2026-10-15)" begin
+    # changes/2026-10-15-bounding-box.md D1-D5
+    find = judgments("mug" => bounding_box("the coffee mug"), "mug_visible" => yes_no("Is there a coffee mug in the image?"))
+    only_box = judgments("mug" => bounding_box("the coffee mug"))
+    prop = bounding_box("the coffee mug")
+    @test prop["type"] == "object" && prop["description"] == "the coffee mug" && prop["additionalProperties"] == false
+    @test collect(keys(prop["properties"])) == ["top", "bottom", "left", "right"] == collect(prop["required"])
+    @test all(e -> e["type"] == "number" && occursin("fraction", e["description"]) && !haskey(e, "minimum") && !haskey(e, "maximum"),
+        values(prop["properties"]))  # Anthropic answers 400 on bounds (receipted)
+    found = judgments_in_schema(find["schema"])
+    @test found["mug"].kind == "box" && isempty(found["mug"].keys) && found["mug"].instruction == "the coffee mug"
+    @test collect(keys(LM15.measurable_judgments(found))) == ["mug_visible"]
+    edge = Dict("type" => "number")
+    all4(s) = Dict("top" => s, "bottom" => s, "left" => s, "right" => s)
+    shapes = LM15.OrderedDict(
+        "hand_written" => Dict("properties" => all4(edge)),
+        "bounded" => Dict("type" => "object", "properties" => all4(Dict("type" => "number", "minimum" => 0, "maximum" => 1))),
+        "extra_edge" => Dict("type" => "object", "properties" => merge(all4(edge), Dict("label" => Dict("type" => "string")))),
+        "integer_edges" => Dict("type" => "object", "properties" => all4(Dict("type" => "integer"))),
+        "pixels" => Dict("type" => "object", "properties" => Dict("x" => edge, "y" => edge, "w" => edge, "h" => edge)),
+    )
+    @test [(n, j.kind) for (n, j) in judgments_in_schema(Dict("type" => "object", "properties" => shapes))] ==
+        [("hand_written", "box"), ("bounded", "box")]
+    @test LM15.gemini_schema(find["schema"], found)["properties"]["mug"] == find["schema"]["properties"]["mug"]
+    @test LM15.anthropic_schema(find["schema"], found)["properties"]["mug"] == find["schema"]["properties"]["mug"]
+
+    # typesafe: a Box question (no criteria), the header with it even without an image.
+    lm = TypeSafeLM(; api_key="k")
+    photo = user(image(; data="iVBORw0KGgo=", media_type="image/png"))
+    header(w) = Dict(lowercase(k) => v for (k, v) in w.headers)
+    w = build_request(lm, Request("jev-preview", photo; config=Config(; response_format=find)))
+    q = JSON.parse(String(copy(w.body)))["questions"]
+    @test q["mug"] == Dict("type" => "box", "instructions" => "the coffee mug")
+    @test header(w)["typesafe-danger-zone-images"] == "true"
+    w = build_request(lm, Request("jev-preview", user("a kitchen"); config=Config(; response_format=only_box)))
+    @test header(w)["typesafe-danger-zone-images"] == "true" && !haskey(JSON.parse(String(copy(w.body))), "assets")
+
+    # The answer: the box verbatim, no distribution; confidence kept in provider_data.
+    reply(answers) = HttpResponse(; status=200, body=Vector{UInt8}(codeunits(JSON.serialize(Dict("model" => "jev-1.14.0", "answers" => answers)))))
+    box = Dict("top" => 0.25, "bottom" => 0.82, "left" => 0.44, "right" => 1)
+    answers = Dict("mug" => Dict("type" => "box", "box" => box, "confidence" => 0.92), "mug_visible" => Dict("type" => "noul", "noul" => 0.97))
+    r = complete(TypeSafeLM(; api_key="k", transport=_ -> reply(answers)),
+        Request("jev-preview", photo; config=Config(; response_format=find, probabilities="required")))
+    @test data(r)["mug"] == box && data(r)["mug"]["right"] isa Integer && data(r)["mug_visible"] == true
+    @test collect(keys(probabilities(r))) == ["mug_visible"]
+    @test r.provider_data["typesafe"]["answers"]["mug"]["confidence"] == 0.92
+    r = complete(TypeSafeLM(; api_key="k", transport=_ -> reply(Dict("mug" => answers["mug"]))),
+        Request("jev-preview", photo; config=Config(; response_format=only_box)))
+    @test data(r) == Dict("mug" => box) && probabilities(r) === nothing
+    for (bad, where) in [
+        (Dict("top" => 0.1, "bottom" => 0.2, "left" => 0.3), "answers.mug.box"),
+        (Dict("top" => 0.1, "bottom" => 1.2, "left" => 0.3, "right" => 0.4), "answers.mug.box.bottom"),
+        (Dict("top" => "0.1", "bottom" => 0.2, "left" => 0.3, "right" => 0.4), "answers.mug.box.top"),
+        ([0.1, 0.2, 0.3, 0.4], "answers.mug.box"),
+    ]
+        err = try
+            complete(TypeSafeLM(; api_key="k", transport=_ -> reply(Dict("mug" => Dict("type" => "box", "box" => bad)))),
+                Request("jev-preview", photo; config=Config(; response_format=only_box))); nothing
+        catch e
+            e
+        end
+        @test err isa ProviderError && occursin(where, sprint(showerror, err))
+    end
+
+    # The probabilities policy concerns only keyed judgments.
+    for policy in ("if_available", "required")
+        @test isempty(plan(AnthropicLM(; api_key="k"), Request("claude-haiku-4-5", photo; config=Config(; response_format=only_box, probabilities=policy, max_tokens=100))))
+    end
+    @test_throws UnsupportedFeatureError plan(AnthropicLM(; api_key="k"),
+        Request("claude-haiku-4-5", photo; config=Config(; response_format=find, probabilities="required", max_tokens=100)))
+
+    # The token trie measures the yes/no; the generated call answers the box.
+    findv = judgments("mug" => bounding_box("the coffee mug"), "ageing" => yes_no("Will it age?"))
+    generated = Dict("id" => "c", "model" => "m", "choices" => [Dict("index" => 0, "finish_reason" => "stop",
+        "message" => Dict("role" => "assistant", "content" => "{\"mug\": {\"top\": 0.2, \"bottom\": 0.6, \"left\": 0.55, \"right\": 0.85}, \"ageing\": false}"))],
+        "usage" => Dict("prompt_tokens" => 1, "completion_tokens" => 1))
+    lm = OpenAIChatLM(; api_key="k", base_url="http://vllm:8001/v1", compat="vllm",
+        transport=trie_transport(Dict(20 => -0.05, 21 => -3.0, 99 => -0.01); chat_reply=generated))
+    r = complete(lm, Request("m", NOTE; config=Config(; response_format=findv, probabilities="required")))
+    @test data(r)["mug"] == Dict("top" => 0.2, "bottom" => 0.6, "left" => 0.55, "right" => 0.85)
+    @test data(r)["ageing"] == true  # measured, overriding the generated pick
+    @test collect(keys(probabilities(r))) == ["ageing"]
+end
