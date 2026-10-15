@@ -2,6 +2,9 @@
 
 ## What 1.0.0 was checked with
 
+Re-checked 2026-10-14 at contract `10645e5`, when the pending registration moved to the
+commit that carries pictures for Jev: `Pkg.test()` and the contract, 1,911 of 1,911.
+
 Re-checked 2026-10-12 at contract `88bb560`, when the pending registration moved to the
 commit that carries the Muse Code subscription through the Meta login: `Pkg.test()` and
 the contract, 1,905 of 1,905.
