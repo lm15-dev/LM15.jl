@@ -1,16 +1,24 @@
 # Changelog
 
-## 1.0.0 — 2026-10-14
+## 1.0.0 — 2026-10-15
 
 The first release of lm15 for Julia. Graded by lm15-contract at the commit in
-`CONTRACT_PIN` (`10645e5`): 1,911 of 1,911 checks, the same count as Python, TypeScript,
+`CONTRACT_PIN` (`1cbdc12`): 1,912 of 1,912 checks, the same count as Python, TypeScript,
 Rust, Go and R. The registration first opened on 2026-09-26 at 1,788 checks; while it
-waited for review it was moved six times, so the first published version carries what
+waited for review it was moved seven times, so the first published version carries what
 landed meanwhile: on 2026-09-30 (contract `57e33d1`, 1,838 checks) the Claude Code and
 Claude default changes, on 2026-10-06 (`0f3ea82`, 1,901) the two stream and tool fixes
 below, on 2026-10-10 (`880f72c` and `8eedbae`, 1,904) the two key fixes and the structured
 answer and thinking budget, on 2026-10-12 (`88bb560`, 1,905) the Muse Code
-subscription, and on 2026-10-14 (`10645e5`, 1,911) pictures for Jev.
+subscription, on 2026-10-14 (`10645e5`, 1,911) pictures for Jev, and on 2026-10-15
+(`1cbdc12`, 1,912) a saved cloud login's settings.
+
+**A saved cloud login's settings (2026-10-15, contract `1cbdc12`):**
+
+- A connection saved with `configure(auth, "vertex-anthropic"; method="cloud", answers=...,
+  settings=Dict("project" => ..., "location" => ...))` sends that project and location; a
+  router `settings` entry for the provider changes only the settings it names. Found in
+  lm15-python by Rolf Fredheim (lm15-python #21).
 
 **Pictures for Jev (2026-10-14, contract `10645e5`):**
 

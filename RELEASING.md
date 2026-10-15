@@ -2,6 +2,9 @@
 
 ## What 1.0.0 was checked with
 
+Re-checked 2026-10-15 at contract `1cbdc12`, when the pending registration moved to the
+commit that uses a saved cloud login's settings: `Pkg.test()` and the contract, 1,912 of 1,912.
+
 Re-checked 2026-10-14 at contract `10645e5`, when the pending registration moved to the
 commit that carries pictures for Jev: `Pkg.test()` and the contract, 1,911 of 1,911.
 
