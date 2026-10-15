@@ -2,6 +2,9 @@
 
 ## What 1.0.0 was checked with
 
+Re-checked 2026-10-15 at contract `6dc1c5c`, when the pending registration moved to the
+commit that adds bounding boxes: `Pkg.test()` and the contract, 1,921 of 1,921.
+
 Re-checked 2026-10-15 at contract `1cbdc12`, when the pending registration moved to the
 commit that uses a saved cloud login's settings: `Pkg.test()` and the contract, 1,912 of 1,912.
 

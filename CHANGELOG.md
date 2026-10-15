@@ -3,15 +3,23 @@
 ## 1.0.0 — 2026-10-15
 
 The first release of lm15 for Julia. Graded by lm15-contract at the commit in
-`CONTRACT_PIN` (`1cbdc12`): 1,912 of 1,912 checks, the same count as Python, TypeScript,
+`CONTRACT_PIN` (`6dc1c5c`): 1,921 of 1,921 checks, the same count as Python, TypeScript,
 Rust, Go and R. The registration first opened on 2026-09-26 at 1,788 checks; while it
-waited for review it was moved seven times, so the first published version carries what
+waited for review it was moved eight times, so the first published version carries what
 landed meanwhile: on 2026-09-30 (contract `57e33d1`, 1,838 checks) the Claude Code and
 Claude default changes, on 2026-10-06 (`0f3ea82`, 1,901) the two stream and tool fixes
 below, on 2026-10-10 (`880f72c` and `8eedbae`, 1,904) the two key fixes and the structured
 answer and thinking budget, on 2026-10-12 (`88bb560`, 1,905) the Muse Code
 subscription, on 2026-10-14 (`10645e5`, 1,911) pictures for Jev, and on 2026-10-15
-(`1cbdc12`, 1,912) a saved cloud login's settings.
+(`1cbdc12`, 1,912) a saved cloud login's settings and (`6dc1c5c`, 1,921) bounding boxes.
+
+**Bounding boxes (2026-10-15, contract `6dc1c5c`):**
+
+- `bounding_box("the coffee mug")` declares a judgment whose answer is four numbers, `top`,
+  `bottom`, `left` and `right`, each a fraction of the picture from its top-left corner. On
+  TypeSafe it is Jev 1.14's Box question (`jev-preview` or `jev-1.14.0`); on other
+  providers it is ordinary structured output. A box has no probabilities; pair it with
+  `yes_no` to ask whether the thing is there.
 
 **A saved cloud login's settings (2026-10-15, contract `1cbdc12`):**
 
