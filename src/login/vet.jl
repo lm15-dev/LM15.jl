@@ -161,6 +161,14 @@ function vet_step(a::Auth, step, clock, ui, env, sentinel)
         report = explain_auth(step["provider"]; env, api_keys=keysmap, auth=a)
         return obj("configured" => report.configured, "steps" => [obj("kind" => s.kind, "state" => string(s.state)) for s in report.steps])
     end
+    if act == "route"
+        keysmap = Dict{String,Any}(p => "$sentinel-explicit" for p in get(step, "api_keys", []))
+        given = Dict{String,Any}(String(k) => Dict{String,String}(String(n) => String(v) for (n, v) in entry)
+                                 for (k, entry) in something(get(step, "settings", nothing), Dict()))
+        router = LMRouter(RouterConfig(; env, api_keys=keysmap, settings=given, auth=a))
+        client = lm(router, step["model"])
+        return obj("settings" => obj((k => client.settings[k] for k in sort!(collect(keys(client.settings))))...))
+    end
     throw(ArgumentError("unknown managed step $(repr(act))"))
 end
 function vet_managed_run(msg)

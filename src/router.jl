@@ -309,6 +309,9 @@ function managed_lm(router::LMRouter, provider)
     account_id=nothing
     origin=nothing
     access=definition.access
+    # AUTH-15: a selected connection's saved settings (a cloud recipe's project,
+    # location, region...) are given values; the explicit entry refines them.
+    saved_settings=Dict{String,String}()
     if source===nothing && named===nothing
         saved=try
             request_auth(auth, provider)
@@ -328,6 +331,7 @@ function managed_lm(router::LMRouter, provider)
         end
         if saved!==nothing
             connection=status(auth, provider).connection
+            connection===nothing || (saved_settings=connection.settings)
             if saved.named!==nothing
                 named=saved.named  # a saved cloud recipe names the identity; the chain rung runs
             else
@@ -355,7 +359,8 @@ function managed_lm(router::LMRouter, provider)
         base;
         api_key,
         base_url,
-        settings=provider_setting(config.settings, provider, Dict{String,String}()),
+        settings=hosted ? merge(saved_settings, provider_setting(config.settings, provider, Dict{String,String}())) :
+            provider_setting(config.settings, provider, Dict{String,String}()),
         env,
         transport=config.transport,
         adaptations=config.adaptations,
