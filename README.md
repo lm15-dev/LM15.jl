@@ -36,8 +36,8 @@ Pkg.add(url="https://github.com/lm15-dev/LM15.jl")
 ```
 
 **1.0.0 is the first release of lm15 for Julia.** It is not yet in Julia's
-General registry (see [RELEASING.md](RELEASING.md)). Python's lm15 is stable;
-TypeScript, Rust and Go are release candidates.
+General registry (see [RELEASING.md](RELEASING.md)). Python's and TypeScript's
+lm15 are stable; Rust and Go are release candidates.
 
 Set the key of the provider you call (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`,
 `GEMINI_API_KEY`, …). The router reads it from the environment. A client made
