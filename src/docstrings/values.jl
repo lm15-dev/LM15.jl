@@ -72,10 +72,16 @@ See also [`Request`](@ref), [`ToolChoice`](@ref), [`Reasoning`](@ref), [`CacheCo
           reasoning_tokens=nothing, input_audio_tokens=nothing,
           output_audio_tokens=nothing)
 
-Record nonnegative token counters. An unreported counter remains `nothing`;
-reported zero remains zero. If both input and output are reported and total is
-omitted, total is their checked sum. An explicitly supplied total is retained.
-Counters are checked against Julia's machine `Int` range.
+Record token counters with one meaning on every provider (MAP-19):
+`input_tokens` is everything the model read, cached tokens included;
+`output_tokens` everything it generated, reasoning included; the cache and
+input-audio counters are parts of input, the reasoning and output-audio
+counters parts of output. An unreported counter remains `nothing`; reported
+zero remains zero. If both input and output are reported and total is
+omitted, total is their checked sum. A part larger than its whole, or a total
+that is not input + output, is an `ArgumentError` (INV-029). Counters are
+checked against Julia's machine `Int` range. The provider's own numbers stay
+in the response's `provider_data`.
 
 ```jldoctest
 julia> Usage(input_tokens=10, output_tokens=3).total_tokens
@@ -133,7 +139,8 @@ for (name, signature, explanation) in (
     (:TopLogprob, "TopLogprob(; token, logprob, bytes=nothing, token_id=nothing)", "Describe one token alternative with a finite log probability, optional byte values and provider token ID."),
     (:TokenLogprob, "TokenLogprob(; token, logprob, bytes=nothing, token_id=nothing, top=())", "Describe a generated token and its alternative TopLogprob values. These are token-level probabilities, not a confidence score for the answer's truth."),
     (:ToolCallInfo, "ToolCallInfo(; id, name, input)\n    ToolCallInfo(part::ToolCallPart)", "Hold a lightweight live-turn call description. Convert to ToolCallPart(info) where a part is needed."),
-    (:InferencePricing, "InferencePricing(; input_per_million=nothing, output_per_million=nothing, cache_read_per_million=nothing, cache_write_per_million=nothing, currency=\"USD\", dimensions=nothing)", "Describe nonnegative unit prices and optional extra pricing dimensions. Unreported rates remain nothing. estimate is not an invoice and does not cover every pricing dimension."),
+    (:InferencePricing, "InferencePricing(; input_per_million=nothing, output_per_million=nothing, cache_read_per_million=nothing, cache_write_per_million=nothing, currency=\"USD\", dimensions=nothing, tiers=())", "Describe nonnegative list prices per million tokens of each billing bucket: uncached input, cache reads, cache writes, output. An unreported rate remains nothing and means unknown, never zero. tiers (PricingTier values in strictly ascending threshold order) reprice long prompts. dimensions is opaque catalog data estimate does not read."),
+    (:PricingTier, "PricingTier(; above_input_tokens, input_per_million=nothing, output_per_million=nothing, cache_read_per_million=nothing, cache_write_per_million=nothing)", "The rates of a call whose input_tokens exceed above_input_tokens (a positive integer). A tier reprices the whole call; a rate it leaves out is unknown at that tier, never taken from the base rates."),
     (:InferenceModelInfo, "InferenceModelInfo(; input_modalities=(\"text\",), output_modalities=(\"text\",), context_window=nothing, max_output_tokens=nothing, supports_reasoning=false, reasoning_efforts=(), pricing=nothing, extensions=nothing)", "Describe reported model capabilities and optional pricing. Catalog metadata does not prove that a particular account can use every capability."),
     (:ModelOrigin, "ModelOrigin(; type=\"provider\", id=nothing, base_model=nothing, provider_data=nothing)", "Record model provenance, an optional origin ID/base model, and opaque provider information."),
     (:ModelInfo, "ModelInfo(; id, provider, api_family, aliases=(), origin=ModelOrigin(), inference=nothing, extensions=nothing)", "Describe a model for catalogs and routing. Register in ModelRegistry to resolve aliases. This metadata does not contact or validate the remote model."),

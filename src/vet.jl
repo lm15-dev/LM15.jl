@@ -7,6 +7,7 @@ const VET_OPS=(
     "replay_stream",
     "normalize_error",
     "serde_roundtrip",
+    "estimate_cost",
     "validate",
     "surface_dump",
     "explain_auth",
@@ -119,6 +120,10 @@ function vet_operation(msg)
         return obj("language"=>"julia", "ops"=>sort!(collect(VET_OPS)), "impl_version"=>pkgversion_string())
     elseif op=="managed_run"
         return vet_managed_run(msg)
+    elseif op=="estimate_cost"
+        # PROTOCOL.md estimate_cost: estimate(pricing, usage); null when unknown.
+        cost=estimate(from_dict(InferencePricing, msg["pricing"]), from_dict(Usage, msg["usage"]))
+        return obj("cost"=>cost)
     elseif op in ("serde_roundtrip", "validate")
         value=to_dict(from_dict(msg["kind"], msg["value"]))
         return op=="validate" ? obj("ok"=>true, "normalized"=>value) : obj("value"=>value)

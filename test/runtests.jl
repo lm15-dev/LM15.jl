@@ -56,6 +56,7 @@ include("tool_description.jl")
 include("auth_failed.jl")
 include("first_attempt.jl")
 include("saved_cloud_settings.jl")
+include("usage_one_meaning.jl")
 
 @testset "aliases and errors" begin
     @test explain_auth("openai_chat"; env=Dict{String,String}()).provider == "openai-chat"

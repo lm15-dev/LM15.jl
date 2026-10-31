@@ -2,6 +2,10 @@
 
 ## What 1.0.0 was checked with
 
+Re-checked 2026-10-31 at contract `cfc3edc`, before the pending registration moves to
+the commit that gives every usage counter one meaning (MAP-19): `Pkg.test()` and the
+contract, 1,968 of 1,968. The move needs `@JuliaRegistrator register` on that commit.
+
 Re-checked 2026-10-15 at contract `6dc1c5c`, when the pending registration moved to the
 commit that adds bounding boxes: `Pkg.test()` and the contract, 1,921 of 1,921.
 

@@ -399,17 +399,39 @@ function Base.close(router::LMRouter)
     end
     return nothing
 end
+"""
+    estimate(pricing, usage)
+
+The list-price cost of one call, or `nothing` when it is not known
+(spec/types.md § InferencePricing, "estimate"). Exact or nothing: the sum, in
+this order, of uncached input, cache reads, cache writes and output, each
+`tokens * rate / 1_000_000`, at the base rates or the highest tier whose
+`above_input_tokens` the call's `input_tokens` exceeds.
+"""
 function estimate(pricing::InferencePricing, usage::Usage)
-    return sum((
-        if getfield(pricing, rate)===nothing || getfield(usage, count)===nothing
-            0.0
-        else
-            getfield(pricing, rate)*getfield(usage, count)/1_000_000
-        end for (rate, count) in (
-            (:input_per_million, :input_tokens),
-            (:output_per_million, :output_tokens),
-            (:cache_read_per_million, :cache_read_tokens),
-            (:cache_write_per_million, :cache_write_tokens),
-        )
-    ))
+    (usage.input_tokens === nothing || usage.output_tokens === nothing) && return nothing
+    (something(usage.input_audio_tokens, 0) > 0 || something(usage.output_audio_tokens, 0) > 0) && return nothing
+    rates = pricing
+    for tier in pricing.tiers
+        usage.input_tokens > tier.above_input_tokens && (rates = tier)
+    end
+    r_in = rates.input_per_million
+    # An unknown cache count is harmless only when its tokens cost the same as
+    # plain input: then the split cannot change the price.
+    known(count, rate) = count !== nothing ? count : (rate !== nothing && rate == r_in ? 0 : nothing)
+    read = known(usage.cache_read_tokens, rates.cache_read_per_million)
+    write = known(usage.cache_write_tokens, rates.cache_write_per_million)
+    (read === nothing || write === nothing) && return nothing
+    total = 0.0
+    for (tokens, rate) in (
+        (usage.input_tokens - read - write, r_in),
+        (read, rates.cache_read_per_million),
+        (write, rates.cache_write_per_million),
+        (usage.output_tokens, rates.output_per_million),
+    )
+        tokens == 0 && continue
+        rate === nothing && return nothing
+        total += tokens * rate / 1_000_000
+    end
+    return total
 end

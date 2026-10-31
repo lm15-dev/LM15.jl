@@ -167,7 +167,9 @@ function judgment_scores(l, response, n_prompts)
         v === nothing || v isa AbstractDict || throw(judgment_reply_error(l, response, "$name must be an object or null"))
     end
     usage = try
-        usage_from("openai-chat", raw_usage)
+        raw_model = get(d, "model", nothing)
+        usage_from("openai-chat", raw_usage;
+            reasoning_usage=reasoning_usage_of(l, raw_model isa AbstractString ? raw_model : ""))
     catch e
         e isa ArgumentError || rethrow()
         throw(judgment_reply_error(l, response, "invalid usage"))

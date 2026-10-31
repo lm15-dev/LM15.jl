@@ -17,6 +17,10 @@ Base.@kwdef struct OpenAIChatCompat <: Compat
     reasoning_off::Maybe{String} = nothing
     json_schema::Maybe{String} = nothing
     token_scoring::Maybe{String} = nothing
+    # MAP-19: how the server counts reasoning in its usage. "in_completion"
+    # (the dialect's rule): completion_tokens already includes it.
+    # "separate": counted beside the completion (xAI), so output is their sum.
+    reasoning_usage::Maybe{String} = nothing
     reasoning_efforts::Maybe{Tuple} = nothing
     routing::Maybe{JsonObject} = nothing
     extensions::Maybe{JsonObject} = nothing
@@ -106,6 +110,7 @@ const CHAT_DEFAULTS = (
     reasoning_off="send",
     json_schema="send",
     token_scoring="none",
+    reasoning_usage="in_completion",
 )
 const RESPONSES_DEFAULTS = (
     developer_role="developer",
@@ -143,6 +148,7 @@ const COMPAT_VALUES=Dict(
     :user_field=>("user", "user_id", "safety_identifier"),
     :forced_tool_choice=>("send", "reject"),
     :reasoning_off=>("send", "lowest"),
+    :reasoning_usage=>("in_completion", "separate"),
     :token_scoring=>("none", "logprob_token_ids"),
     :json_schema=>("send", "reject"),
     :structured_output=>("send", "reject"),
@@ -222,6 +228,7 @@ function validate(c::Compat)
                     "reasoning_efforts",
                     "tool_result_media",
                     "reasoning_off",
+                    "reasoning_usage",
                 )
                 all(k -> k in allowed_knobs, keys(knobs)) ||
                     throw(ArgumentError("unknown per-model compatibility setting"))

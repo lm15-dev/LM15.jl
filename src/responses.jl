@@ -328,17 +328,54 @@ function response_finish(d; has_tool=false)
         "stop"
     end
 end
-function usage_from(dialect, raw; live=false)
+wire_count(v) = v === nothing ? nothing : normalize_field(Usage, :input_tokens, v, Maybe{Int})
+exact_sum(counts...) = any(c -> c === nothing, counts) ? nothing : sum(counts)
+# MAP-19 rule 3: a part larger than its whole withholds the whole; a provider
+# total that is not input + output withholds both and keeps the total.
+function settled_usage(; input_tokens=nothing, output_tokens=nothing, total_tokens=nothing, kw...)
+    parts = Dict{Symbol,Any}(kw)
+    part(name) = something(get(parts, name, nothing), 0)
+    if input_tokens !== nothing && (
+        part(:cache_read_tokens) + part(:cache_write_tokens) > input_tokens ||
+        part(:input_audio_tokens) > input_tokens
+    )
+        input_tokens = nothing
+    end
+    if output_tokens !== nothing &&
+        (part(:reasoning_tokens) > output_tokens || part(:output_audio_tokens) > output_tokens)
+        output_tokens = nothing
+    end
+    if total_tokens !== nothing &&
+        input_tokens !== nothing &&
+        output_tokens !== nothing &&
+        total_tokens != input_tokens + output_tokens
+        input_tokens = output_tokens = nothing
+    end
+    total_tokens === nothing && return Usage(; input_tokens, output_tokens, kw...)
+    return Usage(; input_tokens, output_tokens, total_tokens, kw...)
+end
+"""The preset's MAP-19 `reasoning_usage` for this adapter and model."""
+reasoning_usage_of(l, model) =
+    l.compat isa OpenAIChatCompat ? resolved_compat(l.compat, model).reasoning_usage : "in_completion"
+usage_for(l, r, raw) = usage_from(l.dialect, raw; reasoning_usage=reasoning_usage_of(l, r.model))
+function usage_from(dialect, raw; live=false, reasoning_usage="in_completion")
     d=asobject(raw)
     if dialect=="anthropic"
-        return Usage(;
-            input_tokens=get(d, "input_tokens", nothing),
-            output_tokens=get(d, "output_tokens", nothing),
-            cache_read_tokens=get(d, "cache_read_input_tokens", nothing),
-            cache_write_tokens=get(d, "cache_creation_input_tokens", nothing),
-            reasoning_tokens=get(getobject(d, "output_tokens_details"), "thinking_tokens", nothing),
+        # MAP-19 rule 5: the wire's input_tokens is only the tokens after the
+        # last cache breakpoint; the cache counters are counted beside it.
+        cache_read=wire_count(get(d, "cache_read_input_tokens", nothing))
+        cache_write=wire_count(get(d, "cache_creation_input_tokens", nothing))
+        return settled_usage(;
+            input_tokens=exact_sum(wire_count(get(d, "input_tokens", nothing)), cache_read, cache_write),
+            output_tokens=wire_count(get(d, "output_tokens", nothing)),
+            total_tokens=wire_count(get(d, "total_tokens", nothing)),
+            cache_read_tokens=cache_read,
+            cache_write_tokens=cache_write,
+            reasoning_tokens=wire_count(get(getobject(d, "output_tokens_details"), "thinking_tokens", nothing)),
         )
     elseif dialect=="gemini"
+        # MAP-19 rule 6: prompt, tool use, answer and thoughts are counted side
+        # by side; absent counters inside usageMetadata are 0 (proto3).
         isempty(d) && return Usage()
         function modality(rows)
             numbers=[
@@ -347,18 +384,21 @@ function usage_from(dialect, raw; live=false)
             ]
             return isempty(numbers) ? nothing : sum(numbers)
         end
-        output=get(
+        count(key)=something(wire_count(get(d, key, nothing)), 0)
+        answer=something(wire_count(get(
             d,
             live ? "responseTokenCount" : "candidatesTokenCount",
             get(d, live ? "candidatesTokenCount" : "responseTokenCount", 0),
-        )
-        return Usage(;
-            input_tokens=get(d, "promptTokenCount", 0),
-            output_tokens=output,
-            total_tokens=get(d, "totalTokenCount", nothing),
-            cache_read_tokens=get(d, "cachedContentTokenCount", nothing),
-            reasoning_tokens=get(d, "thoughtsTokenCount", nothing),
-            input_audio_tokens=modality(get(d, "promptTokensDetails", nothing)),
+        )), 0)
+        thoughts=count("thoughtsTokenCount")
+        audio_in=(modality(get(d, "promptTokensDetails", nothing)), modality(get(d, "toolUsePromptTokensDetails", nothing)))
+        return settled_usage(;
+            input_tokens=count("promptTokenCount") + count("toolUsePromptTokenCount"),
+            output_tokens=answer + thoughts,
+            total_tokens=wire_count(get(d, "totalTokenCount", nothing)),
+            cache_read_tokens=count("cachedContentTokenCount"),
+            reasoning_tokens=thoughts,
+            input_audio_tokens=all(isnothing, audio_in) ? nothing : sum(something(a, 0) for a in audio_in),
             output_audio_tokens=modality(
                 first_nonempty(
                     get(d, "candidatesTokensDetails", nothing),
@@ -370,15 +410,31 @@ function usage_from(dialect, raw; live=false)
     chat=dialect=="openai-chat"
     input=getobject(d, chat ? "prompt_tokens_details" : "input_tokens_details")
     output=getobject(d, chat ? "completion_tokens_details" : "output_tokens_details")
-    return Usage(;
-        input_tokens=get(d, chat ? "prompt_tokens" : "input_tokens", nothing),
-        output_tokens=get(d, chat ? "completion_tokens" : "output_tokens", nothing),
-        total_tokens=get(d, "total_tokens", nothing),
-        cache_read_tokens=first_nonempty(get(input, "cached_tokens", nothing), chat ? get(d, "cached_tokens", nothing) : nothing),
-        cache_write_tokens=get(input, "cache_write_tokens", nothing),
-        reasoning_tokens=get(output, "reasoning_tokens", nothing),
-        input_audio_tokens=get(input, "audio_tokens", nothing),
-        output_audio_tokens=get(output, "audio_tokens", nothing),
+    prompt=wire_count(get(d, chat ? "prompt_tokens" : "input_tokens", nothing))
+    completion=wire_count(get(d, chat ? "completion_tokens" : "output_tokens", nothing))
+    total=wire_count(get(d, "total_tokens", nothing))
+    reasoning=wire_count(get(output, "reasoning_tokens", nothing))
+    out=completion
+    # MAP-19 rule 4: reasoning beside completion_tokens on a "separate" preset
+    # (xAI); without a reasoning count, the total must rule reasoning out.
+    if chat && reasoning_usage=="separate" && completion !== nothing
+        out = if reasoning !== nothing
+            completion + reasoning
+        elseif total !== nothing && prompt !== nothing && total == prompt + completion
+            completion
+        else
+            nothing
+        end
+    end
+    return settled_usage(;
+        input_tokens=prompt,
+        output_tokens=out,
+        total_tokens=total,
+        cache_read_tokens=wire_count(first_nonempty(get(input, "cached_tokens", nothing), chat ? get(d, "cached_tokens", nothing) : nothing)),
+        cache_write_tokens=wire_count(get(input, "cache_write_tokens", nothing)),
+        reasoning_tokens=reasoning,
+        input_audio_tokens=wire_count(get(input, "audio_tokens", nothing)),
+        output_audio_tokens=wire_count(get(output, "audio_tokens", nothing)),
     )
 end
 function openai_logprobs(raw)
@@ -606,7 +662,7 @@ function parse_openai_response(l, r, d)
         model=wire_string(first_nonempty(get(d, "model", nothing), r.model)),
         message=assistant(parts),
         finish_reason=response_finish(d; has_tool=any(p->p isa ToolCallPart, parts)),
-        usage=usage_from(l.dialect, get(d, "usage", nothing)),
+        usage=usage_for(l, r, get(d, "usage", nothing)),
         logprobs=isempty(logprobs) ? nothing : Tuple(logprobs),
         provider_data=attach_unmapped(d, unmapped),
     )
@@ -692,7 +748,7 @@ function parse_chat_response(l, r, d; choice=nothing)
         model=string(first_nonempty(get(d, "model", nothing), r.model)),
         message=assistant(parts),
         finish_reason=finish_reason(l.dialect, rawfinish; has_tool),
-        usage=usage_from(l.dialect, get(d, "usage", nothing)),
+        usage=usage_for(l, r, get(d, "usage", nothing)),
         logprobs=isempty(logprobs) ? nothing : logprobs,
         provider_data=attach_unmapped(d, unmapped),
     )
@@ -767,7 +823,7 @@ function parse_anthropic_response(l, r, d)
         finish_reason=finish_reason(
             l.dialect, get(d, "stop_reason", nothing); has_tool=any(p->p isa ToolCallPart, parts)
         ),
-        usage=usage_from(l.dialect, get(d, "usage", nothing)),
+        usage=usage_for(l, r, get(d, "usage", nothing)),
         provider_data=attach_unmapped(d, unmapped),
     )
 end
@@ -914,7 +970,7 @@ function parse_gemini_response(l, r, d)
             get(candidate, "finishReason", nothing);
             has_tool=any(p->p isa ToolCallPart, parts),
         ),
-        usage=usage_from(l.dialect, get(d, "usageMetadata", nothing)),
+        usage=usage_for(l, r, get(d, "usageMetadata", nothing)),
         logprobs=isempty(logprobs) ? nothing : logprobs,
         provider_data=attach_unmapped(d, unmapped),
     )

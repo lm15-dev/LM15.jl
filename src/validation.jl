@@ -211,6 +211,28 @@ function check_input_data(parts, where)
             "$where data parts carry value only; probabilities belong to assistant messages (INV-052)"))
     end
 end
+"""The first INV-029 relation a Usage breaks, or `nothing`."""
+function usage_inconsistency(u)
+    part(n) = something(getfield(u, n), 0)
+    if u.input_tokens !== nothing
+        cached = part(:cache_read_tokens) + part(:cache_write_tokens)
+        cached > u.input_tokens &&
+            return "cache_read_tokens + cache_write_tokens ($cached) exceed input_tokens ($(u.input_tokens))"
+        part(:input_audio_tokens) > u.input_tokens &&
+            return "input_audio_tokens ($(u.input_audio_tokens)) exceed input_tokens ($(u.input_tokens))"
+    end
+    if u.output_tokens !== nothing
+        part(:reasoning_tokens) > u.output_tokens &&
+            return "reasoning_tokens ($(u.reasoning_tokens)) exceed output_tokens ($(u.output_tokens))"
+        part(:output_audio_tokens) > u.output_tokens &&
+            return "output_audio_tokens ($(u.output_audio_tokens)) exceed output_tokens ($(u.output_tokens))"
+    end
+    if u.total_tokens !== nothing && u.input_tokens !== nothing && u.output_tokens !== nothing &&
+        u.total_tokens != u.input_tokens + u.output_tokens
+        return "total_tokens ($(u.total_tokens)) is not input_tokens + output_tokens ($(u.input_tokens) + $(u.output_tokens))"
+    end
+    return nothing
+end
 function validate(x::Canonical)
     T = typeof(x)
     get(CANONICAL_TYPES, string(nameof(T)), nothing) === T ||
@@ -362,6 +384,24 @@ function validate(x::Canonical)
     elseif x isa Usage
         all(n -> getfield(x, n) === nothing || getfield(x, n) >= 0, fieldnames(Usage)) ||
             throw(ArgumentError("usage counters must be non-negative"))
+        problem = usage_inconsistency(x)
+        problem === nothing || throw(ArgumentError(
+            "$problem (INV-029). Since lm15-contract MAP-19 (2026-10-31) input_tokens includes cached tokens " *
+            "and output_tokens includes reasoning, on every provider; an earlier record from Anthropic, Gemini " *
+            "or xAI must add them (changes/2026-10-31-usage-one-meaning.md)"))
+    elseif x isa PricingTier
+        x.above_input_tokens > 0 ||
+            throw(ArgumentError("PricingTier.above_input_tokens must be a positive integer"))
+        for n in (:input_per_million, :output_per_million, :cache_read_per_million, :cache_write_per_million)
+            v = getfield(x, n)
+            v === nothing || (isfinite(v) && v >= 0) || throw(ArgumentError("$n must be >= 0"))
+        end
+    elseif x isa InferencePricing
+        require_items(x.tiers, PricingTier, "tiers")
+        for i in 2:length(x.tiers)
+            x.tiers[i].above_input_tokens > x.tiers[i-1].above_input_tokens || throw(ArgumentError(
+                "InferencePricing.tiers must be in strictly ascending above_input_tokens order"))
+        end
     elseif x isa Response
         x.message.role == "assistant" || throw(ArgumentError("response message must be assistant"))
         x.logprobs === nothing || require_items(x.logprobs, TokenLogprob, "logprobs")

@@ -1,17 +1,31 @@
 # Changelog
 
-## 1.0.0 — 2026-10-15
+## 1.0.0 — 2026-10-31
 
 The first release of lm15 for Julia. Graded by lm15-contract at the commit in
-`CONTRACT_PIN` (`6dc1c5c`): 1,921 of 1,921 checks, the same count as Python, TypeScript,
+`CONTRACT_PIN` (`cfc3edc`): 1,968 of 1,968 checks, the same count as Python, TypeScript,
 Rust, Go and R. The registration first opened on 2026-09-26 at 1,788 checks; while it
 waited for review it was moved eight times, so the first published version carries what
 landed meanwhile: on 2026-09-30 (contract `57e33d1`, 1,838 checks) the Claude Code and
 Claude default changes, on 2026-10-06 (`0f3ea82`, 1,901) the two stream and tool fixes
 below, on 2026-10-10 (`880f72c` and `8eedbae`, 1,904) the two key fixes and the structured
 answer and thinking budget, on 2026-10-12 (`88bb560`, 1,905) the Muse Code
-subscription, on 2026-10-14 (`10645e5`, 1,911) pictures for Jev, and on 2026-10-15
-(`1cbdc12`, 1,912) a saved cloud login's settings and (`6dc1c5c`, 1,921) bounding boxes.
+subscription, on 2026-10-14 (`10645e5`, 1,911) pictures for Jev, on 2026-10-15
+(`1cbdc12`, 1,912) a saved cloud login's settings and (`6dc1c5c`, 1,921) bounding boxes,
+and on 2026-10-31 (`cfc3edc`, 1,968) one meaning per usage counter.
+
+**One meaning per usage counter (2026-10-31, contract `cfc3edc`):**
+
+- `Usage` means the same on every provider: `input_tokens` includes cached tokens,
+  `output_tokens` includes reasoning, the cache, reasoning and audio counters are parts of
+  one of the two, and `total_tokens` is their sum (MAP-19). Anthropic input and Gemini and
+  xAI output counts are larger than the providers' own numbers, which stay in
+  `provider_data`. A `Usage` whose part exceeds its whole, or whose total is not the sum,
+  is an `ArgumentError`.
+- `estimate(pricing, usage)` returns the exact list price or `nothing` when an unknown
+  count could change it; `InferencePricing(; tiers=(PricingTier(; above_input_tokens,
+  ...),))` reprices long prompts. The registration moves to this commit, so 1.0.0 never
+  shipped the earlier meaning (lm15-contract `changes/2026-10-31-usage-one-meaning.md`).
 
 **Bounding boxes (2026-10-15, contract `6dc1c5c`):**
 

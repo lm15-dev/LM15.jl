@@ -508,6 +508,13 @@ end
     name::String
     input::JsonObject
 end
+@canonical PricingTier begin
+    above_input_tokens::Int
+    input_per_million::Maybe{Float64} = nothing
+    output_per_million::Maybe{Float64} = nothing
+    cache_read_per_million::Maybe{Float64} = nothing
+    cache_write_per_million::Maybe{Float64} = nothing
+end
 @canonical InferencePricing begin
     input_per_million::Maybe{Float64} = nothing
     output_per_million::Maybe{Float64} = nothing
@@ -515,6 +522,7 @@ end
     cache_write_per_million::Maybe{Float64} = nothing
     currency::String = "USD"
     dimensions::Maybe{JsonObject} = nothing
+    tiers::Tuple = ()
 end
 @canonical InferenceModelInfo begin
     input_modalities::Tuple = ("text",)

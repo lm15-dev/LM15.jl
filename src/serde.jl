@@ -133,7 +133,7 @@ function from_dict(::Type{T}, data::AbstractDict) where {T<:Canonical}
         elseif name === :adaptations
             v isa AbstractVector || throw(ArgumentError("adaptations must be an array"))
             kw[name] = Tuple(from_dict(Adaptation, item) for item in v)
-        elseif name in (:messages, :requests, :tools, :images, :top, :items) ||
+        elseif name in (:messages, :requests, :tools, :images, :top, :items, :tiers) ||
             (name === :logprobs && C <: Union{Response,TextDelta})
             if v === nothing && name === :logprobs
                 C === TextDelta || (kw[name] = nothing)
@@ -148,6 +148,8 @@ function from_dict(::Type{T}, data::AbstractDict) where {T<:Canonical}
                 Tool
             elseif name === :images
                 ImagePart
+            elseif name === :tiers
+                PricingTier
             elseif name === :top
                 TopLogprob
             elseif name === :logprobs

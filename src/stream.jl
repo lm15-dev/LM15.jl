@@ -414,7 +414,7 @@ function openai_stream_frame(l, r, d)
             out,
             StreamEndEvent(;
                 finish_reason=response_finish(response; has_tool),
-                usage=usage_from(l.dialect, get(response, "usage", nothing)),
+                usage=usage_for(l, r, get(response, "usage", nothing)),
                 provider_data=response,
             ),
         )
@@ -466,7 +466,7 @@ function chat_stream_frame(l, r, d)
             out,
             StreamEndEvent(;
                 finish_reason=finish===nothing ? nothing : get(CHAT_FINISH, finish, "stop"),
-                usage=usage isa AbstractDict ? usage_from(l.dialect, usage) : nothing,
+                usage=usage isa AbstractDict ? usage_for(l, r, usage) : nothing,
                 provider_data=d,
             ),
         )
@@ -577,7 +577,7 @@ function anthropic_stream_frame(l, r, d)
                 out,
                 StreamEndEvent(;
                     finish_reason=finish===nothing ? nothing : finish_reason(l.dialect, finish),
-                    usage=isempty(raw) ? nothing : usage_from(l.dialect, raw),
+                    usage=isempty(raw) ? nothing : usage_for(l, r, raw),
                     provider_data=d,
                 ),
             )
@@ -674,7 +674,7 @@ function gemini_stream_frame(l, r, d)
             out,
             StreamEndEvent(;
                 finish_reason=finish_reason(l.dialect, finish; has_tool),
-                usage=usage_from(l.dialect, get(d, "usageMetadata", nothing)),
+                usage=usage_for(l, r, get(d, "usageMetadata", nothing)),
                 provider_data=d,
             ),
         )
