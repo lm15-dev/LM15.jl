@@ -42,7 +42,7 @@ letters that are not acronyms, so the Julia name spells out what lm15 stands
 for. Bind a shorter name in your own code if you like
 (`const LM = LanguageModel15`). It is not yet in Julia's
 General registry (see [RELEASING.md](RELEASING.md)). lm15 is stable in Python,
-TypeScript, Rust and Go.
+TypeScript, Rust, Go and R.
 
 Set the key of the provider you call (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`,
 `GEMINI_API_KEY`, …). The router reads it from the environment. A client made
@@ -172,9 +172,9 @@ reading an OpenAI Chat Completions request into a `Request` are in the
 
 ## Stability
 
-The chat core is stable within 1.x: requests, responses, streaming, tools,
+The chat core is stable within 2.x: requests, responses, streaming, tools,
 structured output and judgments, errors, credentials and model listing. These
-ship as **provisional** and may still change in 1.x with a notice in the
+ship as **provisional** and may still change in 2.x with a notice in the
 contract: files, batches, media generation, stored caches, realtime sessions,
 Chat Completions ingest and sign-in.
 
