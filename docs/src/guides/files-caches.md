@@ -6,7 +6,7 @@ the relevant support and may create billable storage. They are not run by the do
 ## Upload, inspect, use and delete
 
 ```julia
-using LM15
+using LanguageModel15
 client = OpenAILM(api_key=ENV["OPENAI_API_KEY"])
 file = file_upload(client, FileUploadRequest(filename="notes.pdf", path="notes.pdf",
     media_type="application/pdf"))
@@ -40,7 +40,7 @@ Their cost and lifecycle differ.
 A stored-cache example for a compatible Gemini account:
 
 ```julia
-using LM15
+using LanguageModel15
 client = GeminiLM(api_key=ENV["GEMINI_API_KEY"])
 model = ENV["LM15_MODEL"]
 prefix = Request(model, user("Background context approved for reuse."))

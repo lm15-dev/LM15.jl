@@ -1,7 +1,7 @@
 # Providers and routing
 
 ```@meta
-CurrentModule = LM15
+CurrentModule = LanguageModel15
 ```
 
 Use a direct client for one explicit provider or LMRouter for model-name routing.
@@ -38,6 +38,7 @@ ModelInfo
 ModelOrigin
 InferenceModelInfo
 InferencePricing
+PricingTier
 estimate
 ```
 

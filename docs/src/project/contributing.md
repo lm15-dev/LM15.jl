@@ -1,4 +1,4 @@
-# Work on LM15.jl
+# Work on LanguageModel15.jl
 
 Keep changes scoped to the Julia repository unless the task explicitly calls for
 contract or shared-website changes. Read the pinned contract's authority rules before
@@ -9,7 +9,7 @@ changing mappings. The commands below are the ones the 1.0.0 release was checked
 From the repository root, the ordinary package environment is selected by
 `julia --project=.`. The documentation environment is `docs/`; scientific tutorials
 use `examples/scientific/`. Documentation and scientific dependencies do not become
-mandatory runtime dependencies of LM15.
+mandatory runtime dependencies of LanguageModel15.
 
 Install dependencies before entering a no-network execution environment:
 

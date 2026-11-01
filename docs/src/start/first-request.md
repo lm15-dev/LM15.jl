@@ -2,7 +2,7 @@
 
 **Goal:** obtain text and reported token usage from one model call.
 
-**Requires:** LM15 in your project, a provider account, an allowed model and its key.
+**Requires:** LanguageModel15 in your project, a provider account, an allowed model and its key.
 **Effect:** sends the prompt to the chosen provider and may incur charges.
 This live example is not executed by the documentation build; it was run once against
 OpenAI on 2026-09-26.
@@ -19,7 +19,7 @@ Model names and availability can change independently of LM15.
 ## The complete call
 
 ```julia
-using LM15
+using LanguageModel15
 
 client = OpenAILM(api_key=ENV["OPENAI_API_KEY"])
 model = get(ENV, "LM15_MODEL", "gpt-4.1-mini")

@@ -1,10 +1,10 @@
 # # Keep a conversation explicit
 #
 # **Goal:** carry an earlier response into a follow-up Request.
-# **Requires:** LM15. **Effect:** an in-memory HTTP fixture; no network or credentials.
+# **Requires:** LanguageModel15. **Effect:** an in-memory HTTP fixture; no network or credentials.
 # Replies below are deliberately fabricated, not evidence of model behavior.
 
-using LM15
+using LanguageModel15
 
 # A callable transport can return a buffered HttpResponse. These two fixture
 # responses make the workflow deterministic without contacting an online service.

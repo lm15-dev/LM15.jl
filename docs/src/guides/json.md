@@ -5,7 +5,7 @@ a valid instance of your application's Julia type. These are configuration snipp
 not live calls or schema-validation results.
 
 ```julia
-using LM15
+using LanguageModel15
 format = Dict("type" => "json_schema", "name" => "measurement", "strict" => true,
     "schema" => Dict(
         "type" => "object",

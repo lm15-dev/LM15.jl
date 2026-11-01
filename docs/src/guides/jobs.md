@@ -7,7 +7,7 @@ patterns for remote, potentially billable operations; they are not docs-build ex
 ## Batch requests
 
 ```julia
-using LM15
+using LanguageModel15
 client = OpenAILM(api_key=ENV["OPENAI_API_KEY"])
 model = get(ENV, "LM15_MODEL", "gpt-4.1-mini")
 requests = [Request(model, user(prompt); config=Config(max_tokens=80))

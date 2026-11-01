@@ -482,7 +482,7 @@ function configure(a::Auth, provider; method, answers=Dict{String,String}(), set
     d = descriptor(a, provider)
     provider = d.id
     chosen = try
-        LM15.method(d, method)
+        LanguageModel15.method(d, method)
     catch e
         e isa KeyError || rethrow()
         throw(auth_operation_error("$provider: no setup method $(repr(method)); see login_methods($(repr(provider)))";

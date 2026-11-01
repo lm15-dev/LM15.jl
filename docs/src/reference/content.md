@@ -1,7 +1,7 @@
 # Requests, configuration and content
 
 ```@meta
-CurrentModule = LM15
+CurrentModule = LanguageModel15
 ```
 
 ## Core values

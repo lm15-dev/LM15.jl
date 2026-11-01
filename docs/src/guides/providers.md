@@ -7,7 +7,7 @@ The snippets here illustrate configuration; they are not live availability tests
 ## Direct clients
 
 ```julia
-using LM15
+using LanguageModel15
 client = OpenAILM(api_key=ENV["OPENAI_API_KEY"])
 req = Request("gpt-4.1-mini", user("Hello"))
 ```
@@ -53,7 +53,7 @@ is local; `list_models(client)` contacts a provider. Register `ModelInfo` entrie
 when you want application-owned aliases. Ambiguous aliases raise an error.
 
 ```julia
-using LM15
+using LanguageModel15
 registry = ModelRegistry()
 register!(registry, ModelInfo(id="example-model", provider="openai",
     api_family="openai_responses", aliases=("writer",)))

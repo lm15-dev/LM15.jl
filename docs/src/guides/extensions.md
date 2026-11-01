@@ -6,11 +6,11 @@ object. These examples illustrate extension code; they are not run by the docume
 ## An application-owned result type
 
 ```julia
-using LM15
+using LanguageModel15
 struct Label
     value::String
 end
-LM15.tool_value(value::Label) = value.value
+LanguageModel15.tool_value(value::Label) = value.value
 ```
 
 | Method | Required when | Agreement |
@@ -33,11 +33,11 @@ and converts a call's JSON input (see [conversions](conversions.md)).
 A streaming transport implements one method:
 
 ```julia
-using LM15
+using LanguageModel15
 struct FixedTransport <: AbstractTransport
     response::HttpResponse
 end
-function LM15.open_response(f, transport::FixedTransport, wire::WireRequest)
+function LanguageModel15.open_response(f, transport::FixedTransport, wire::WireRequest)
     body = IOBuffer(transport.response.body)
     head = HttpResponse(status=transport.response.status,
         headers=transport.response.headers)

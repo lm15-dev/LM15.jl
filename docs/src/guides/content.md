@@ -5,7 +5,7 @@ inline bytes/base64, a URL, a provider file ID, or a local path.
 These snippets construct data; a later provider call sends or uploads content.
 
 ```julia
-using LM15
+using LanguageModel15
 message = user("Describe this image", image(path="photo.jpg"))
 req = Request("example-model", message)
 ```

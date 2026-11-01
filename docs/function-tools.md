@@ -1,4 +1,4 @@
-# Function tools in LM15.jl
+# Function tools in LanguageModel15.jl
 
 The function-tool material is now part of the complete Julia manual. This page
 preserves the earlier README/GitHub link without maintaining a second copy of all

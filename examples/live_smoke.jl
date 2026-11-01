@@ -1,4 +1,4 @@
-# Live smoke: real requests through LM15.jl, with receipts. It needs keys (or saved
+# Live smoke: real requests through LanguageModel15.jl, with receipts. It needs keys (or saved
 # sign-ins) and costs a little money, so it is not a test and no CI runs it; the contract
 # harness is the gate. The same bindings and checks as lm15-go examples/live_smoke.
 #
@@ -19,8 +19,8 @@
 # headers and query keys redacted), the reply status, and what LM15 made of it. Run
 # lm15-contract/tools/check_secrecy.py --root on the directory before keeping it.
 
-using LM15
-using LM15: JSON, JSONObject, obj
+using LanguageModel15
+using LanguageModel15: JSON, JSONObject, obj
 
 const BINDINGS = [
     (name="openai", key="OPENAI_API_KEY", model="gpt-5-mini", tokens=4000),
@@ -48,13 +48,13 @@ const MANAGED = [
 const PROVIDER_REFUSES = Dict(("deepseek", "order") => "DeepSeek has no json_schema mode and answers 400")
 
 # ─── a transport that records what was sent (redacted) and the reply's head ──
-struct Recorder <: LM15.AbstractTransport
-    inner::LM15.HTTPTransport
+struct Recorder <: LanguageModel15.AbstractTransport
+    inner::LanguageModel15.HTTPTransport
     log::Vector{Any}
 end
 const SECRET_HEADERS = ("authorization", "x-api-key", "api-key", "x-goog-api-key")
-function LM15.open_response(f, t::Recorder, request::LM15.WireRequest)
-    uri = LM15.HTTP.URI(request.url)
+function LanguageModel15.open_response(f, t::Recorder, request::LanguageModel15.WireRequest)
+    uri = LanguageModel15.HTTP.URI(request.url)
     url = isempty(uri.query) ? request.url :
         replace(request.url, r"([?&]key=)[^&]*" => s"\1<redacted>")
     sent = obj("method" => request.method, "url" => url,
@@ -66,14 +66,14 @@ function LM15.open_response(f, t::Recorder, request::LM15.WireRequest)
         end)
     entry = obj("sent" => sent)
     push!(t.log, entry)
-    return LM15.open_response(t.inner, request) do head, io
+    return LanguageModel15.open_response(t.inner, request) do head, io
         entry["status"] = head.status
         f(head, io)
     end
 end
 
 short(s, n=100) = length(s) > n ? first(s, n) * "…" : s
-err_text(e) = e isa LM15Error ? "$(LM15.class_name(e)) ($(e.code)): $(e.message)" : sprint(showerror, e)
+err_text(e) = e isa LM15Error ? "$(LanguageModel15.class_name(e)) ($(e.code)): $(e.message)" : sprint(showerror, e)
 response_value(r) = r === nothing ? nothing : to_dict(r)
 
 function hello(router, b, problems, notes)
@@ -185,7 +185,7 @@ function main(args)
     end
     mkpath(out)
     log = Any[]
-    recorder = Recorder(LM15.HTTPTransport(), log)
+    recorder = Recorder(LanguageModel15.HTTPTransport(), log)
     plain = LMRouter(RouterConfig(; transport=recorder))
     managed = "--managed" in args ? LMRouter(RouterConfig(; transport=recorder, auth=local_auth(), env=Dict{String,String}())) : nothing
     bindings = vcat(BINDINGS, managed === nothing ? [] : MANAGED)
@@ -240,7 +240,7 @@ function main(args)
     counts = Dict{String,Int}()
     foreach(r -> counts[r["verdict"]] = get(counts, r["verdict"], 0) + 1, results)
     open(joinpath(out, "SUMMARY.md"), "w") do io
-        println(io, "# Live smoke, LM15.jl $(pkgversion(LM15))\n")
+        println(io, "# Live smoke, LanguageModel15.jl $(pkgversion(LanguageModel15))\n")
         println(io, "$(length(results)) checks: ", join(("$v $k" for (k, v) in sort!(collect(counts))), ", "), ".\n")
         println(io, "| Binding | Model | Check | Verdict | Notes |\n|---|---|---|---|---|")
         for r in results

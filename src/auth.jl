@@ -1,7 +1,7 @@
 const REFRESH_SKEW_MS = 300_000
 const CLAUDE_HINT = "Log in again: run `claude` and use /login"
 const CODEX_HINT = "Log in again: run `codex login`"
-const XAI_HINT = "Run LM15.login(\"xai\")"
+const XAI_HINT = "Run LanguageModel15.login(\"xai\")"
 
 struct LocalOAuthCredential
     access_token::String

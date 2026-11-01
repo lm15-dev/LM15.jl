@@ -1,11 +1,11 @@
 # # Summarize a table without uploading it all
 #
 # **Goal:** return a useful statistic or selected rows while keeping the full table
-# local. **Requires:** LM15, DataFrames, Tables and Statistics.
+# local. **Requires:** LanguageModel15, DataFrames, Tables and Statistics.
 # **Effect:** local computation only. The calls are explicitly authored examples,
 # not requests captured from a model.
 
-using LM15, DataFrames, Tables, Statistics
+using LanguageModel15, DataFrames, Tables, Statistics
 
 const measurements = DataFrame(trial=[1, 2, 3], height=[1.5, 2.0, 2.5])
 

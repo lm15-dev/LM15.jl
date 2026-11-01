@@ -4,8 +4,8 @@
 # reason to edit the fixture (AUTHORITY.md).
 
 using Test
-using LM15
-using LM15: JSON
+using LanguageModel15
+using LanguageModel15: JSON
 
 const SENTINEL = "SECRET-SENTINEL-DO-NOT-PRINT"
 # The contract checkout next to this package when present (development), else the
@@ -216,5 +216,5 @@ end
 
 using Aqua
 @testset "package quality (Aqua)" begin
-    Aqua.test_all(LM15; ambiguities=(recursive=false,))
+    Aqua.test_all(LanguageModel15; ambiguities=(recursive=false,))
 end

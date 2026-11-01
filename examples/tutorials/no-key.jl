@@ -1,10 +1,10 @@
 # # Answer a tool call without an account
 #
 # **Goal:** describe a tool, check a proposed call, run the function yourself, and
-# build the answer. **Requires:** LM15. **Effect:** local computation only. No key,
+# build the answer. **Requires:** LanguageModel15. **Effect:** local computation only. No key,
 # network or charges.
 
-using LM15
+using LanguageModel15
 
 # A tool is data: a name, a description the model reads, and a JSON Schema for its
 # inputs, written out as in every LM15 language. The function stays yours.

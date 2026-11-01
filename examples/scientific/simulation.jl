@@ -1,10 +1,10 @@
 # # Explain a simulation without sending the solver object
 #
 # **Goal:** solve a small exponential-decay problem locally and return a concise
-# summary. **Requires:** LM15, SciMLBase and OrdinaryDiffEqTsit5.
+# summary. **Requires:** LanguageModel15, SciMLBase and OrdinaryDiffEqTsit5.
 # **Effect:** local numerical work. No provider account or request is involved.
 
-using LM15, SciMLBase, OrdinaryDiffEqTsit5
+using LanguageModel15, SciMLBase, OrdinaryDiffEqTsit5
 
 # The model gets this bounded interface—not every method and option behind solve.
 # For production, also enforce resource/time budgets outside the function if work

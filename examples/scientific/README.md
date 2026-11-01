@@ -30,8 +30,8 @@ julia --startup-file=no --project=. runtests.jl
 ```
 
 This environment targets Julia 1.12 and has separate dependency choices from the
-LM15 library. Literate is a tutorial-rendering dependency here, not a runtime
-requirement for applications using LM15.
+LanguageModel15 library. Literate is a tutorial-rendering dependency here, not a runtime
+requirement for applications using LanguageModel15.
 
 The documentation build renders these sources in an isolated scientific stage,
 records their source/dependency context, and includes ordinary Markdown in the final

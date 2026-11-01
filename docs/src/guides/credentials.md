@@ -7,7 +7,7 @@ The snippets below illustrate setup; they are not executed by the docs build.
 ## Explicit keys and tokens
 
 ```julia
-using LM15
+using LanguageModel15
 client = OpenAILM(api_key=ENV["OPENAI_API_KEY"])
 ```
 
@@ -46,7 +46,7 @@ HTTP/command/file hooks are advanced integration surfaces, not a general sandbox
 ## Diagnose selection without printing secrets
 
 ```julia
-using LM15
+using LanguageModel15
 report = explain_auth("openai"; env=Dict{String,String}(), api_keys=Dict())
 println(describe(report))
 ```

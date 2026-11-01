@@ -1,5 +1,5 @@
 module FirstAttemptTests
-using Test, LM15
+using Test, LanguageModel15
 
 # 2026-10-10: a budget alone fills effort (MAP-7 rule 3 read the other way); a
 # DataPart answer reads through text (types.md §Response convenience).
@@ -13,6 +13,6 @@ end
 
 @testset "a DataPart answer reads through text" begin
     r = Response(; model="m", message=Message(; role="assistant", parts=(DataPart(; value=Dict("ok"=>true)),)), finish_reason="stop", usage=Usage())
-    @test LM15.text(r) == "{\"ok\":true}"
+    @test LanguageModel15.text(r) == "{\"ok\":true}"
 end
 end

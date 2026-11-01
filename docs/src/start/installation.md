@@ -12,7 +12,7 @@ In a Julia session opened in your own application directory:
 using Pkg
 Pkg.activate(".")
 Pkg.develop(path="/absolute/path/to/lm15-jl")
-using LM15
+using LanguageModel15
 ```
 
 Replace the path with your checkout. `Pkg.develop` keeps that checkout live: edits
@@ -26,17 +26,17 @@ For an application that does not need an editable checkout:
 using Pkg
 Pkg.activate(".")
 Pkg.add(url="https://github.com/lm15-dev/LM15.jl.git")
-using LM15
+using LanguageModel15
 ```
 
 The repository command selects its current source. Use `rev="v1.0.0"` for the
 release, and commit your application's `Project.toml` and `Manifest.toml` for
-reproducibility. Once LM15 is in Julia's General registry, `Pkg.add("LM15")` works too;
+reproducibility. Once LanguageModel15 is in Julia's General registry, `Pkg.add("LanguageModel15")` works too;
 until then it does not.
 
 ## Optional scientific packages
 
-LM15 alone does not install a data-frame package, Unitful or a solver. Add only what
+LanguageModel15 alone does not install a data-frame package, Unitful or a solver. Add only what
 you need to your application's environment:
 
 ```julia
@@ -44,7 +44,7 @@ using Pkg
 Pkg.add(["DataFrames", "Tables", "Unitful"])
 ```
 
-Loading Tables or Unitful enables the corresponding LM15 extension. A DataFrame
+Loading Tables or Unitful enables the corresponding LanguageModel15 extension. A DataFrame
 still needs the deliberate `table_content` representation; it is not uploaded
 simply because a package was loaded.
 
@@ -53,8 +53,8 @@ solver dependencies used by the tutorials. Those examples target Julia 1.12.
 
 ## Notebook and editor use
 
-Make the notebook kernel or editor use the environment in which LM15 was installed.
-In IJulia, check `Base.active_project()` if `using LM15` cannot find the package.
+Make the notebook kernel or editor use the environment in which LanguageModel15 was installed.
+In IJulia, check `Base.active_project()` if `using LanguageModel15` cannot find the package.
 Pluto manages notebook environments separately; follow its package-management
 workflow instead of assuming a terminal environment is shared.
 

@@ -5,7 +5,7 @@ unrepresentable fields rather than silently dropping them. The examples here are
 local data conversion unless an explicit provider call is shown.
 
 ```julia
-using LM15
+using LanguageModel15
 body = Dict("model" => "example-model", "messages" => [
     Dict("role" => "user", "content" => "Hello"),
 ])

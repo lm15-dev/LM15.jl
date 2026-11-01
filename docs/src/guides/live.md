@@ -5,7 +5,7 @@ account and can incur charges while connected. The following is a live applicati
 example, not an executable documentation block.
 
 ```julia
-using LM15
+using LanguageModel15
 client = OpenAILM(api_key=ENV["OPENAI_API_KEY"])
 config = LiveConfig(model=ENV["LM15_LIVE_MODEL"])
 answer = live(client, config) do session

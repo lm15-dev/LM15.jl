@@ -7,7 +7,7 @@ These snippets are illustrative live operations and are not executed by the docs
 ## Images
 
 ```julia
-using LM15
+using LanguageModel15
 client = OpenAILM(api_key=ENV["OPENAI_API_KEY"])
 generated = image_generate(client,
     ImageGenerationRequest(model=ENV["LM15_IMAGE_MODEL"], prompt="A simple botanical sketch."))

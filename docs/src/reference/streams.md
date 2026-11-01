@@ -1,7 +1,7 @@
 # Streams and live sessions
 
 ```@meta
-CurrentModule = LM15
+CurrentModule = LanguageModel15
 ```
 
 ## Response streams

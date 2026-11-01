@@ -1,11 +1,11 @@
 # # Check, approve and answer a tool call
 #
 # **Goal:** follow the complete data flow of a function-tool exchange.
-# **Requires:** LM15. **Effect:** local computation with a synthetic provider call.
+# **Requires:** LanguageModel15. **Effect:** local computation with a synthetic provider call.
 # The separate live-tools.jl script performs the actual, potentially paid requests;
 # it is never executed by the docs generator.
 
-using LM15
+using LanguageModel15
 
 square_tool = FunctionTool(
     name="square",

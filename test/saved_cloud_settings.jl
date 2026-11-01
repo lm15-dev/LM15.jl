@@ -3,11 +3,11 @@
 # changes/2026-10-15-saved-cloud-settings.md).
 
 @testset "a saved cloud recipe's settings build the managed route (AUTH-15)" begin
-    auth = LM15.memory_auth()
-    LM15.configure(auth, "vertex-anthropic"; method="cloud", answers=Dict("named" => "environment"),
+    auth = LanguageModel15.memory_auth()
+    LanguageModel15.configure(auth, "vertex-anthropic"; method="cloud", answers=Dict("named" => "environment"),
         settings=Dict("project" => "saved-project", "location" => "us-east5"))
     env = Dict("NO_GCE_CHECK" => "1", "GOOGLE_CLOUD_PROJECT" => "env-project")
-    built(; kw...) = let s = LM15.lm(LM15.LMRouter(LM15.RouterConfig(; env, auth, kw...)), "vertex-anthropic:claude-test").settings
+    built(; kw...) = let s = LanguageModel15.lm(LanguageModel15.LMRouter(LanguageModel15.RouterConfig(; env, auth, kw...)), "vertex-anthropic:claude-test").settings
         (s["project"], s["location"])
     end
     @test built() == ("saved-project", "us-east5")

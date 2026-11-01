@@ -1,7 +1,7 @@
 # Function tools
 
 ```@meta
-CurrentModule = LM15
+CurrentModule = LanguageModel15
 ```
 
 A tool is data: a name, a description and a JSON Schema, written out. LM15 carries
@@ -28,7 +28,7 @@ tool_message
 ## Result presentation and extensions
 
 The Unitful extension supplies quantity result values when Unitful is loaded. Tables
-supplies table_content when Tables is loaded. Neither package is a mandatory LM15
+supplies table_content when Tables is loaded. Neither package is a mandatory LanguageModel15
 runtime dependency. See [extension agreements](../guides/extensions.md).
 
 ```@docs

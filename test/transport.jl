@@ -132,7 +132,7 @@ end
 
     # This cloud door uses a query key. A refused local connection must not
     # expose the underlying ConnectError URL through Julia's exception stack.
-    access = LM15.provider_definition("vertex-express").access
+    access = LanguageModel15.provider_definition("vertex-express").access
     client = GeminiLM(api_key=SENTINEL, access=access, base_url="http://127.0.0.1:1/v1")
     stack = try
         complete(client, Request("local-model", user("hi")))

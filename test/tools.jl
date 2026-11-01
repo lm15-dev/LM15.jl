@@ -1,11 +1,11 @@
 module ToolTests
-using Test, LM15
+using Test, LanguageModel15
 
-# A tool is data, written out as in every LM15 language. LM15.jl does not derive
+# A tool is data, written out as in every LM15 language. LanguageModel15.jl does not derive
 # tools from Julia methods or run them (removed before 1.0, 2026-09-23); what it
 # offers is turning a function's result into tool-result content.
 
-readout(result) = LM15.JSON.parse(only(result.content).text)
+readout(result) = LanguageModel15.JSON.parse(only(result.content).text)
 square(n::Int) = n^2
 const SQUARE = FunctionTool(
     name="square",
@@ -35,7 +35,7 @@ const SQUARE = FunctionTool(
     @test_throws ArgumentError LiveConfig(model="m", tools=[square])
     @test_throws ArgumentError Request("m", user("hi"); tools=["square"])
     for name in (:tool, :ToolBinding, :tool_arguments, :execute_tool, :tool_schema, :tool_decode, :ToolInputError)
-        @test !isdefined(LM15, name)
+        @test !isdefined(LanguageModel15, name)
     end
 end
 
@@ -61,11 +61,11 @@ Base.getindex(x::OffsetProbe, i::Int) = x.values[i + 1]
     @test tool_value(1+2im) == Dict("real"=>1, "imag"=>2)
     @test tool_value((1, 2)) == [1, 2]
     @test only(tool_content(())).text == "[]"
-    @test LM15.JSON.parse(only(tool_content(0.1f0)).text) == Float64(0.1f0)
+    @test LanguageModel15.JSON.parse(only(tool_content(0.1f0)).text) == Float64(0.1f0)
     @test only(tool_content("hello")).text == "hello"
     @test only(tool_content(image(data=UInt8[1, 2, 3]))) isa ImagePart
     @test only(tool_content(TextPart[TextPart("a")])).text == "a"
-    @test LM15.JSON.parse(only(tool_content(big(2)^100)).text) == big(2)^100
+    @test LanguageModel15.JSON.parse(only(tool_content(big(2)^100)).text) == big(2)^100
     for x in (missing, NaN, Inf, BigFloat("1.2"), [1 2; 3 4], Dict(:x=>1))
         @test_throws ArgumentError tool_content(x)
     end
@@ -75,7 +75,7 @@ Base.getindex(x::OffsetProbe, i::Int) = x.values[i + 1]
     d = Dict{String,Any}()
     d["cycle"] = d
     @test_throws ArgumentError tool_content(d)
-    matrix = LM15.JSON.parse(only(array_content([1 2; 3 4])).text)
+    matrix = LanguageModel15.JSON.parse(only(array_content([1 2; 3 4])).text)
     @test matrix["shape"] == [2, 2]
     @test matrix["order"] == "column-major"
     @test matrix["values"] == [1, 3, 2, 4]

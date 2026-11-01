@@ -1,7 +1,7 @@
 # Authentication
 
 ```@meta
-CurrentModule = LM15
+CurrentModule = LanguageModel15
 ```
 
 Credential values can be sensitive even when their default display is redacted.

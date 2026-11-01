@@ -2,7 +2,16 @@
 
 ## 1.0.0 — 2026-10-31
 
-The first release of lm15 for Julia. Graded by lm15-contract at the commit in
+The first release of lm15 for Julia, as the package **`LanguageModel15`** (`using
+LanguageModel15`). Until 2026-10-31 it was called `LM15`; Julia's General registry does
+not accept that name automatically (fewer than five letters, an acronym), and the request
+for an exception went unanswered, so the Julia name spells out what lm15 stands for. The
+UUID is unchanged and `LM15` was never registered, so nothing installed from the registry
+breaks; a checkout used with `using LM15` must now say `using LanguageModel15`. The error
+type `LM15Error` and the `LM15_*` environment variables keep their names: they are shared
+with every lm15 language.
+
+Graded by lm15-contract at the commit in
 `CONTRACT_PIN` (`cfc3edc`): 1,968 of 1,968 checks, the same count as Python, TypeScript,
 Rust, Go and R. The registration first opened on 2026-09-26 at 1,788 checks; while it
 waited for review it was moved eight times, so the first published version carries what

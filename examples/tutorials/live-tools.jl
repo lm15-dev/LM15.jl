@@ -2,7 +2,7 @@
 # Never included or executed by the documentation build. This source is unverified.
 # Set LM15_RUN_LIVE_EXAMPLES=yes and OPENAI_API_KEY only when you intend to send
 # data and potentially incur charges. LM15_MODEL chooses an account-supported model.
-using LM15
+using LanguageModel15
 
 get(ENV, "LM15_RUN_LIVE_EXAMPLES", "no") == "yes" ||
     error("Live examples are disabled; explicitly authorize them before running")

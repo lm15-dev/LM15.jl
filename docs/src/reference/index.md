@@ -25,5 +25,5 @@ read effect and ownership notes before retrying.
 ## The module
 
 ```@docs
-LM15
+LanguageModel15
 ```

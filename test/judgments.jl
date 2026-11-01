@@ -133,10 +133,10 @@ end
         values(prop["properties"]))  # Anthropic answers 400 on bounds (receipted)
     found = judgments_in_schema(find["schema"])
     @test found["mug"].kind == "box" && isempty(found["mug"].keys) && found["mug"].instruction == "the coffee mug"
-    @test collect(keys(LM15.measurable_judgments(found))) == ["mug_visible"]
+    @test collect(keys(LanguageModel15.measurable_judgments(found))) == ["mug_visible"]
     edge = Dict("type" => "number")
     all4(s) = Dict("top" => s, "bottom" => s, "left" => s, "right" => s)
-    shapes = LM15.OrderedDict(
+    shapes = LanguageModel15.OrderedDict(
         "hand_written" => Dict("properties" => all4(edge)),
         "bounded" => Dict("type" => "object", "properties" => all4(Dict("type" => "number", "minimum" => 0, "maximum" => 1))),
         "extra_edge" => Dict("type" => "object", "properties" => merge(all4(edge), Dict("label" => Dict("type" => "string")))),
@@ -145,8 +145,8 @@ end
     )
     @test [(n, j.kind) for (n, j) in judgments_in_schema(Dict("type" => "object", "properties" => shapes))] ==
         [("hand_written", "box"), ("bounded", "box")]
-    @test LM15.gemini_schema(find["schema"], found)["properties"]["mug"] == find["schema"]["properties"]["mug"]
-    @test LM15.anthropic_schema(find["schema"], found)["properties"]["mug"] == find["schema"]["properties"]["mug"]
+    @test LanguageModel15.gemini_schema(find["schema"], found)["properties"]["mug"] == find["schema"]["properties"]["mug"]
+    @test LanguageModel15.anthropic_schema(find["schema"], found)["properties"]["mug"] == find["schema"]["properties"]["mug"]
 
     # typesafe: a Box question (no criteria), the header with it even without an image.
     lm = TypeSafeLM(; api_key="k")

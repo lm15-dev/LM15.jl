@@ -7,7 +7,7 @@ Parasail, a cloud (Azure, Bedrock, Vertex) or a model on your own machine:
 change the model string, keep the program.
 
 ```julia
-using LM15
+using LanguageModel15
 router = LMRouter()
 answer = complete(router, Request("anthropic:claude-haiku-4-5", user("What eats acorns at night?")))
 println(text(answer))
@@ -35,7 +35,11 @@ using Pkg
 Pkg.add(url="https://github.com/lm15-dev/LM15.jl")
 ```
 
-**1.0.0 is the first release of lm15 for Julia.** It is not yet in Julia's
+**1.0.0 is the first release of lm15 for Julia.** The package is named
+`LanguageModel15`: Julia's General registry asks for names of five or more
+letters that are not acronyms, so the Julia name spells out what lm15 stands
+for. Bind a shorter name in your own code if you like
+(`const LM = LanguageModel15`). It is not yet in Julia's
 General registry (see [RELEASING.md](RELEASING.md)). Python's and TypeScript's
 lm15 are stable; Rust and Go are release candidates.
 
@@ -136,7 +140,7 @@ login), saved in one file every lm15 language shares. Sign-in is
 provider's call.
 
 ```julia
-using LM15, LM15.Interactive
+using LanguageModel15, LanguageModel15.Interactive
 connect() do lm                       # pick a connection and a model in the terminal
     println(text(complete(lm, "Explain drought stress in oaks.")))
 end
@@ -200,7 +204,7 @@ Where Julia differs from the family surface (contract `playbooks/api-family.md`)
 - **Functions, not methods.** `complete(router, req)`, `text(answer)`,
   `tool_calls(answer)`, `status(auth, "xai")`: Julia dispatches on the first
   argument where the other languages write `router.complete(req)`.
-- **`connect` lives in `LM15.Interactive`**, which you import where a person is
+- **`connect` lives in `LanguageModel15.Interactive`**, which you import where a person is
   present (the contract requires a separately imported interactive family;
   it also avoids clashing with `Sockets.connect`).
 - **Ordered choices are vectors of pairs.** A Julia `Dict` has no order, so

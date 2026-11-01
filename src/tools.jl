@@ -1,5 +1,5 @@
 # Tools are data: a FunctionTool (name, description, JSON Schema) or a
-# BuiltinTool, written out as in every LM15 language. LM15.jl does not derive
+# BuiltinTool, written out as in every LM15 language. LanguageModel15.jl does not derive
 # tools from Julia methods or run them; `@tool` and its bindings were removed
 # before 1.0 (2026-09-23). What remains here turns a function's *result* into
 # tool-result content, for the answer you send back.

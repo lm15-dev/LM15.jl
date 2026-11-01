@@ -1,4 +1,4 @@
-# LM15.jl
+# LanguageModel15.jl
 
 **Call a model. Keep control of the conversation and your Julia code.**
 
@@ -7,7 +7,7 @@ response and stream types across supported protocols. There is no LM15 relay.
 You decide which data to send, which functions may run, and when to stop.
 
 !!! note "What was checked"
-    For LM15 1.0.0 (2026-09-26, Julia 1.12.7): this manual builds in a network-free
+    For LanguageModel15 1.0.0 (2026-09-26, Julia 1.12.7): this manual builds in a network-free
     sandbox with its doctests; every tutorial and scientific example was run; the live
     examples were run once against OpenAI. See [Status and evidence](project/status.md).
 
@@ -26,7 +26,7 @@ This example is local. It answers a tool call with a Julia function; it does not
 ask an online model to choose the call.
 
 ```jldoctest
-julia> using LM15
+julia> using LanguageModel15
 
 julia> square(n::Integer) = big(n)^2;
 

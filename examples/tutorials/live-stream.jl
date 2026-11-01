@@ -1,6 +1,6 @@
 # Live streaming example. Not executed during documentation generation.
 # Explicitly authorize provider access and charges before running this script.
-using LM15
+using LanguageModel15
 
 get(ENV, "LM15_RUN_LIVE_EXAMPLES", "no") == "yes" ||
     error("Live examples are disabled; explicitly authorize them before running")

@@ -218,9 +218,9 @@ Base.show(io::IO, n::DeviceCodeNotice) = print(io, "DeviceCodeNotice(<user code 
     AuthUI
 
 What an application supplies to let a login talk to a person (AUTH-16). Subtype it and
-implement `LM15.prompt(ui, p::Prompt) -> String` (throw `LoginCancelled` or
+implement `LanguageModel15.prompt(ui, p::Prompt) -> String` (throw `LoginCancelled` or
 `InterruptException` to cancel) and `Base.notify(ui, n::Notice)`; optionally
-`LM15.dismiss(ui, p)` for a prompt made stale by a loopback callback. Or pass functions to
+`LanguageModel15.dismiss(ui, p)` for a prompt made stale by a loopback callback. Or pass functions to
 [`FunctionUI`](@ref). A UI opens a browser only when the application chose that.
 """
 abstract type AuthUI end

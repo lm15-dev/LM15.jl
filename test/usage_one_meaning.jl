@@ -16,8 +16,8 @@ end
         "total_tokens"=>374,
         "completion_tokens_details"=>Dict{String,Any}("reasoning_tokens"=>111),
     )
-    @test LM15.usage_from("openai-chat", raw; reasoning_usage="separate").output_tokens == 120
-    withheld = LM15.usage_from("openai-chat", raw)
+    @test LanguageModel15.usage_from("openai-chat", raw; reasoning_usage="separate").output_tokens == 120
+    withheld = LanguageModel15.usage_from("openai-chat", raw)
     @test withheld.output_tokens === nothing && withheld.total_tokens == 374
 end
 

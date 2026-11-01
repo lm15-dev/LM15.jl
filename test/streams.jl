@@ -95,7 +95,7 @@ struct MemoryTransport <: AbstractTransport
     opens::Base.RefValue{Int}
     closes::Base.RefValue{Int}
 end
-function LM15.open_response(f, transport::MemoryTransport, request::WireRequest)
+function LanguageModel15.open_response(f, transport::MemoryTransport, request::WireRequest)
     transport.opens[] += 1
     io = IOBuffer(transport.bytes; read=true, write=false)
     try

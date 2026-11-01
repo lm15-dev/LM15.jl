@@ -104,7 +104,7 @@ function validate_document(data, where)
             throw(storage_error("Credential store at $where has a malformed $(repr(META_KEY)) block; not touching it."))
         version = get(meta, "version", nothing)
         version == STORE_VERSION && !(version isa Bool) || throw(storage_error(
-            "Credential store at $where is managed-store version $(repr(version)); this lm15 reads version $STORE_VERSION. Upgrade LM15 or point LM15_CREDENTIALS_PATH at another file.";
+            "Credential store at $where is managed-store version $(repr(version)); this lm15 reads version $STORE_VERSION. Upgrade LanguageModel15 or point LM15_CREDENTIALS_PATH at another file.";
             reason="unsupported_store_version"))
         slots = get(meta, "slots", obj())
         slots isa AbstractDict && all(v -> v isa AbstractDict, values(slots)) ||

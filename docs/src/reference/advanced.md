@@ -1,7 +1,7 @@
 # Advanced integration interfaces
 
 ```@meta
-CurrentModule = LM15
+CurrentModule = LanguageModel15
 ```
 
 Most applications should use complete, stream and the resource/job entry points.

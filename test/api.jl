@@ -78,7 +78,7 @@ end
 end
 
 @testset "access policies and named presets select the right door" begin
-    code = AnthropicLM(access=LM15.provider_definition("claude-code").access, api_key="explicit")
+    code = AnthropicLM(access=LanguageModel15.provider_definition("claude-code").access, api_key="explicit")
     @test code.provider == "claude-code"
     @test code.access.backend == "claude-code"
     @test_throws ArgumentError OpenAILM(access=code.access, api_key="explicit")

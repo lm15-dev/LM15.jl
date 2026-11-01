@@ -4,11 +4,11 @@ using REPL
 
 function check_public_help(source)
     aliases = Dict(:StaticCredential => :ApiKey, :RequestTimeoutError => :TimeoutError)
-    public_names = filter(!=(:LM15), names(LM15))
+    public_names = filter(!=(:LanguageModel15), names(LanguageModel15))
     missing = Symbol[]
     for name in public_names
         target = get(aliases, name, name)
-        Docs.hasdoc(LM15, target) || push!(missing, name)
+        Docs.hasdoc(LanguageModel15, target) || push!(missing, name)
     end
     isempty(missing) || error("Missing public help: " * join(string.(missing), ", "))
 
@@ -22,7 +22,7 @@ function check_public_help(source)
                     entry = strip(line)
                     isempty(entry) && continue
                     name = first(split(entry, '('; limit=2))
-                    push!(listed, Symbol(replace(name, "LM15."=>"", "Base."=>"")))
+                    push!(listed, Symbol(replace(name, "LanguageModel15."=>"", "Base."=>"")))
                 end
             end
         end

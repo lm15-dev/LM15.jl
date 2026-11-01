@@ -9,7 +9,7 @@ from Julia, and the other way round.
 ## At a terminal
 
 ```julia
-using LM15, LM15.Interactive
+using LanguageModel15, LanguageModel15.Interactive
 connect() do lm                  # choose or make a connection, then a model
     answer = complete(lm, "Explain drought stress in two sentences.")
     println(text(answer))
@@ -25,7 +25,7 @@ choice. Without a terminal it refuses rather than reading input it cannot get.
 ## In a program
 
 ```julia
-using LM15
+using LanguageModel15
 auth = local_auth()                          # reads nothing yet
 login(auth, "xai", "device"; ui=TerminalUI())
 router = LMRouter(RouterConfig(; auth))

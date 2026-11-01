@@ -256,7 +256,7 @@ end
 function open_response(f, transport::AbstractTransport, request::WireRequest)
     return throw(
         ArgumentError(
-            "$(typeof(transport)) must implement LM15.open_response(f, transport, request)"
+            "$(typeof(transport)) must implement LanguageModel15.open_response(f, transport, request)"
         ),
     )
 end

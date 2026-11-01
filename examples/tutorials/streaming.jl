@@ -1,10 +1,10 @@
 # # Read a response as it arrives
 #
 # **Goal:** print text fragments, then read the assembled answer.
-# **Requires:** LM15. **Effect:** local synthetic events; no network.
+# **Requires:** LanguageModel15. **Effect:** local synthetic events; no network.
 # An online provider produces analogous events, but not these predetermined words.
 
-using LM15
+using LanguageModel15
 
 req = Request("docs-model", user("Say hello."))
 source = StreamEvent[

@@ -14,7 +14,7 @@
 The six live checks that were not "ok": Z.AI's `json_schema` adapted as receipted,
 DeepSeek refusing `json_schema` as receipted, Grok declining to repeat an exact phrase,
 and an OpenRouter minted key that had reached its \$1 limit (three checks). None is a
-defect in LM15.jl.
+defect in LanguageModel15.jl.
 
 Not checked by the maintainers: macOS and Windows (the CI matrix runs them), a
 screen-reader or mobile pass over the manual, and every provider's files, batches,

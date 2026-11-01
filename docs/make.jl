@@ -1,4 +1,4 @@
-using Documenter, Literate, LM15
+using Documenter, Literate, LanguageModel15
 include("build_support.jl")
 using .DocsBuildSupport
 DocsBuildSupport.require_isolation()
@@ -53,11 +53,11 @@ for (directory, _, files) in walkdir(work)
 end
 
 check_public_help(work)
-DocMeta.setdocmeta!(LM15, :DocTestSetup, :(using LM15); recursive=true)
+DocMeta.setdocmeta!(LanguageModel15, :DocTestSetup, :(using LanguageModel15); recursive=true)
 
 makedocs(
     root=@__DIR__, source=joinpath(".work", "src"), build="build",
-    sitename="LM15.jl", modules=[LM15], checkdocs=:exports,
+    sitename="LanguageModel15.jl", modules=[LanguageModel15], checkdocs=:exports,
     doctest=true, warnonly=false, linkcheck=false,
     format=Documenter.HTML(prettyurls=true, edit_link="main",
         canonical=get(ENV, "LM15_DOCS_CANONICAL", nothing), assets=["assets/lm15.css"]),
@@ -112,5 +112,5 @@ makedocs(
     ],
 )
 DocsBuildSupport.write_receipt(joinpath(@__DIR__, "build", "build-receipt.toml");
-    stage="manual", packages=Dict("LM15"=>string(Base.pkgversion(LM15)),
+    stage="manual", packages=Dict("LanguageModel15"=>string(Base.pkgversion(LanguageModel15)),
         "Documenter"=>string(Base.pkgversion(Documenter)), "Literate"=>string(Base.pkgversion(Literate))))

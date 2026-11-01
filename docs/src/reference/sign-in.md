@@ -1,7 +1,7 @@
 # Managed sign-in
 
 ```@meta
-CurrentModule = LM15
+CurrentModule = LanguageModel15
 ```
 
 The managed-authentication surface (spec AUTH-12 to AUTH-26). See the
@@ -84,6 +84,6 @@ ModelChoice
 ModelSelection
 routed
 BoundClient
-LM15.Interactive
+LanguageModel15.Interactive
 connect
 ```

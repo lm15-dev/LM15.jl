@@ -1,9 +1,9 @@
-module LM15TablesExt
+module LanguageModel15TablesExt
 
-using LM15
+using LanguageModel15
 using Tables: Tables
 
-function LM15.table_content(table; max_rows=100, cell=LM15.tool_value)
+function LanguageModel15.table_content(table; max_rows=100, cell=LanguageModel15.tool_value)
     max_rows isa Integer && !(max_rows isa Bool) && max_rows >= 0 ||
         throw(ArgumentError("max_rows must be a nonnegative integer"))
     Tables.istable(typeof(table)) || throw(ArgumentError("expected a Tables.jl table"))
@@ -23,7 +23,7 @@ function LM15.table_content(table; max_rows=100, cell=LM15.tool_value)
     names === nothing && throw(ArgumentError("empty table has no declared column schema"))
     length(unique(names)) == length(names) ||
         throw(ArgumentError("table column names must be unique"))
-    return LM15.tool_content((columns=string.(collect(names)), rows=values))
+    return LanguageModel15.tool_content((columns=string.(collect(names)), rows=values))
 end
 
 end

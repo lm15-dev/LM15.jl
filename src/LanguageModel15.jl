@@ -1,5 +1,5 @@
 """Provider-neutral foundation-model requests, responses, and streams."""
-module LM15
+module LanguageModel15
 
 using Base64: base64encode, base64decode
 using Dates
@@ -445,19 +445,19 @@ export Part,
     is_ready
 
 """
-    LM15.Interactive
+    LanguageModel15.Interactive
 
 The explicitly interactive helpers (AUTH-16, AUTH-23): `connect()` asks a person at a
 terminal to choose or make a connection and a model. Import it where a person is present;
 a server should attach an `Auth` with saved connections to its router instead.
 
-    using LM15, LM15.Interactive
+    using LanguageModel15, LanguageModel15.Interactive
     connect() do lm
         println(text(complete(lm, "Explain drought stress.")))
     end
 """
 module Interactive
-import ..LM15: connect, TerminalUI
+import ..LanguageModel15: connect, TerminalUI
 export connect, TerminalUI
 end
 

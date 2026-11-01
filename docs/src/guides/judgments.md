@@ -6,7 +6,7 @@ schema response format; the answer comes back as a [`DataPart`](@ref) holding th
 object, and, where the provider can measure it, a probability for every key.
 
 ```julia
-using LM15
+using LanguageModel15
 format = judgments(
     "style" => choice("Dominant style?", ["fruit" => "Fruit-forward", "oak" => "Oak-driven", "mineral" => nothing]),
     "quality" => score("How good is this wine?", ["poor", "fair", "great"]),

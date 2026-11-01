@@ -4,7 +4,7 @@ mutable struct ScriptedSession
     events::Vector{Any}
     reads::Int
 end
-function LM15.recv(s::ScriptedSession)
+function LanguageModel15.recv(s::ScriptedSession)
     s.reads += 1
     return s.events[s.reads]
 end
@@ -15,13 +15,13 @@ end
         @info "lm15-contract not found next to the package; the consumer vectors were not run" path
     else
         vectors = JSON.parse(read(path, String))
-        @test vectors["defaults"]["max_bytes"] == LM15.DEFAULT_TURN_MAX_BYTES
-        @test vectors["defaults"]["max_events"] == LM15.DEFAULT_TURN_MAX_EVENTS
+        @test vectors["defaults"]["max_bytes"] == LanguageModel15.DEFAULT_TURN_MAX_BYTES
+        @test vectors["defaults"]["max_events"] == LanguageModel15.DEFAULT_TURN_MAX_EVENTS
         for case in vectors["cases"]
             events = [from_dict(LiveServerEvent, e) for e in case["events"]]
             session = ScriptedSession(events, 0)
             limits = case["limits"]
-            view = LM15.turn_view(session; max_bytes=limits["max_bytes"], max_events=limits["max_events"])
+            view = LanguageModel15.turn_view(session; max_bytes=limits["max_bytes"], max_events=limits["max_events"])
             failure = nothing
             try
                 for _ in view
@@ -52,12 +52,12 @@ end
                     reads = session.reads
                     @test_throws CollectionLimitError iterate(view)
                     @test session.reads == reads
-                    @test LM15.snapshot(view).ended_by == "incomplete"
+                    @test LanguageModel15.snapshot(view).ended_by == "incomplete"
                     @test failure.partial.ended_by == "incomplete"
                 end
             end
         end
     end
-    @test_throws ArgumentError LM15.turn_view(ScriptedSession([], 0); max_bytes=0)
-    @test_throws ArgumentError LM15.turn_view(ScriptedSession([], 0); max_events=true)
+    @test_throws ArgumentError LanguageModel15.turn_view(ScriptedSession([], 0); max_bytes=0)
+    @test_throws ArgumentError LanguageModel15.turn_view(ScriptedSession([], 0); max_events=true)
 end

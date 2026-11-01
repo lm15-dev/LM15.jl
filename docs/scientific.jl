@@ -24,8 +24,8 @@ for name in DocsBuildSupport.SCIENCE_TUTORIALS
     DocsBuildSupport.add_download_link(page, name * ".jl")
 end
 
-using LM15, DataFrames, Tables, Unitful, SciMLBase, OrdinaryDiffEqTsit5
+using LanguageModel15, DataFrames, Tables, Unitful, SciMLBase, OrdinaryDiffEqTsit5
 packages = Dict(string(nameof(m)) => string(Base.pkgversion(m))
-    for m in (LM15, DataFrames, Tables, Unitful, SciMLBase, OrdinaryDiffEqTsit5, Literate))
+    for m in (LanguageModel15, DataFrames, Tables, Unitful, SciMLBase, OrdinaryDiffEqTsit5, Literate))
 DocsBuildSupport.write_receipt(joinpath(output, "receipt.toml");
     stage="scientific", packages=packages)

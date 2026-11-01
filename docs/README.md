@@ -1,4 +1,4 @@
-# LM15.jl documentation sources
+# LanguageModel15.jl documentation sources
 
 The complete manual is under [`src/`](src/index.md). Tutorials are authored as
 annotated Julia files under `examples/tutorials/` and `examples/scientific/`.

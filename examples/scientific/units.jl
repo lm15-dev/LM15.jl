@@ -1,9 +1,9 @@
 # # Keep physical units through a tool call
 #
 # **Goal:** compute a speed without confusing metres, seconds or other units.
-# **Requires:** LM15 and Unitful. **Effect:** local computation; no account.
+# **Requires:** LanguageModel15 and Unitful. **Effect:** local computation; no account.
 
-using LM15, Unitful
+using LanguageModel15, Unitful
 
 # The schema asks for each quantity as a value with a fixed unit.
 quantity_schema(unit) = Dict(

@@ -1,7 +1,7 @@
 # Resources, generation and jobs
 
 ```@meta
-CurrentModule = LM15
+CurrentModule = LanguageModel15
 ```
 
 These are remote operations unless a specific accessor/constructor says otherwise.

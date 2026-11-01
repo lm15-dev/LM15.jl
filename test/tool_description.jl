@@ -1,5 +1,5 @@
 module ToolDescriptionTests
-using Test, LM15
+using Test, LanguageModel15
 
 # MAP-17: a function tool with no description reaches every wire with no description
 # key, never `"description": null`. The contract's tool_no_description cases pin the
@@ -23,7 +23,7 @@ function declarations(x::AbstractVector, out=Any[])
     return out
 end
 only_declaration(x) = only(declarations(x))
-wire_body(req) = LM15.JSON.parse(String(copy(req.body)))
+wire_body(req) = LanguageModel15.JSON.parse(String(copy(req.body)))
 
 const CLIENTS = (
     "anthropic" => () -> AnthropicLM(; api_key="k", env=Dict{String,String}()),
@@ -59,13 +59,13 @@ end
         gemini = GeminiLM(api_key="k", env=Dict{String,String}())
         for (lm, model) in
             ((openai, "gpt-realtime-mini"), (gemini, "gemini-3.1-flash-live-preview"))
-            frames = LM15.live_setup_frames(lm, LiveConfig(; model, tools=[weather(description)]))
+            frames = LanguageModel15.live_setup_frames(lm, LiveConfig(; model, tools=[weather(description)]))
             @test !haskey(only_declaration(frames), "description")
         end
         prefix = Request(
             "gemini-2.5-flash", user("a long stable prefix"); tools=[weather(description)]
         )
-        cache = LM15.build_cache_request(gemini, :create; prefix, ttl_seconds=300)
+        cache = LanguageModel15.build_cache_request(gemini, :create; prefix, ttl_seconds=300)
         @test !haskey(only_declaration(wire_body(cache)), "description")
         anthropic = AnthropicLM(api_key="k", env=Dict{String,String}())
         nested = Request(
@@ -75,7 +75,7 @@ end
             config=Config(max_tokens=64),
         )
         batch = only(
-            LM15.build_batch_requests(
+            LanguageModel15.build_batch_requests(
                 anthropic, :submit; request=BatchRequest(requests=[nested]), upload_body=nothing
             ),
         )

@@ -52,8 +52,8 @@ end
                     "fresh", "rotated", round(Int64, time()*1000)+3_600_000, nothing
                 )
             end
-            one = LM15.get_local_credential("claude-code", path; refresh_fn=refresh)
-            two = LM15.get_local_credential("claude-code", path; refresh_fn=refresh)
+            one = LanguageModel15.get_local_credential("claude-code", path; refresh_fn=refresh)
+            two = LanguageModel15.get_local_credential("claude-code", path; refresh_fn=refresh)
             @test one.access_token == two.access_token == "fresh"
             @test refreshed[] == 1
             saved = JSON.parse(read(path, String))
@@ -63,13 +63,13 @@ end
 
             write(path, JSON.serialize(original))
             before = read(path, String)
-            @test_throws AuthError LM15.get_local_credential(
+            @test_throws AuthError LanguageModel15.get_local_credential(
                 "claude-code", path; refresh_fn=(args...)->error("refresh failed with "*SENTINEL)
             )
             @test read(path, String) == before
             delete!(original["claudeAiOauth"], "refreshToken")
             write(path, JSON.serialize(original))
-            @test_throws AuthError LM15.get_local_credential(
+            @test_throws AuthError LanguageModel15.get_local_credential(
                 "claude-code", path; refresh_fn=refresh
             )
             @test refreshed[] == 1
@@ -82,24 +82,24 @@ end
         withenv("LM15_LOCK_DIR"=>joinpath(dir, "locks")) do
             path = joinpath(dir, "credentials.json")
             code = """
-                using LM15
+                using LanguageModel15
                 try
-                    LM15.hold_file_lock(ARGS[1]; timeout=0.05) do
+                    LanguageModel15.hold_file_lock(ARGS[1]; timeout=0.05) do
                         exit(2)
                     end
                 catch error
-                    error isa LM15.LockTimeoutError || rethrow()
+                    error isa LanguageModel15.LockTimeoutError || rethrow()
                     error.code == "lock_timeout" || exit(3)
-                    LM15.retryable(error) || exit(4)
+                    LanguageModel15.retryable(error) || exit(4)
                     println("lock_timeout")
                 end
                 """
             command = `$(Base.julia_cmd()) --startup-file=no --history-file=no --project=$(dirname(Base.active_project())) -e $code $path`
-            output = LM15.hold_file_lock(path) do
+            output = LanguageModel15.hold_file_lock(path) do
                 read(command, String)
             end
             @test strip(output) == "lock_timeout"
-            acquired = LM15.hold_file_lock(path; timeout=0.2) do
+            acquired = LanguageModel15.hold_file_lock(path; timeout=0.2) do
                 true
             end
             @test acquired

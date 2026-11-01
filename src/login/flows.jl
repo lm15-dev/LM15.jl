@@ -796,7 +796,7 @@ function login_table()
     # so login alone would advertise a model connection that cannot make a request.
     table[RADIUS_ID] = (ProviderDescriptor(RADIUS_ID, "Radius", "Radius", (),
         (LoginMethod("browser", "Sign in with Radius", "account", "authorization_code"; availability="unavailable",
-            reason="Radius's model protocol is not implemented in LM15.jl; login without inference would be a false 'supported' claim"),),
+            reason="Radius's model protocol is not implemented in LanguageModel15.jl; login without inference would be a false 'supported' claim"),),
         nothing, nothing), RecipeFlow(RADIUS_ID), nothing)
     sort!(table)
     LOGIN_TABLE[] = table

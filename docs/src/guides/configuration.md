@@ -1,7 +1,7 @@
 # Configure generation and inspect usage
 
 ```@meta
-DocTestSetup = :(using LM15)
+DocTestSetup = :(using LanguageModel15)
 ```
 
 Generation settings belong in `Config`; transport and credentials belong on the

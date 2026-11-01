@@ -1,4 +1,4 @@
-# Releasing LM15.jl
+# Releasing LanguageModel15.jl
 
 ## What 1.0.0 was checked with
 
@@ -54,13 +54,15 @@ python3 ../lm15-contract/tools/check_secrecy.py --root receipts/2026-09-26-live-
    versions, the contract job, the lowest-compatible-versions job, the docs build).
 2. On the release commit, comment `@JuliaRegistrator register` (the Registrator GitHub
    app must be installed on the repository). TagBot then tags `v1.0.0`.
-3. **The name needs a human reviewer.** The registry's automatic merge refuses `LM15` on
-   three name rules: shorter than 5 characters, all capitals, and close to `LMDB` and
-   `MD5`. Registration still works, but the pull request waits for a registry
-   maintainer; explain there that `lm15` is the project's name in every language
-   (Python `lm15`, npm `@lm15/lm15`, crates.io `lm15`, Go `lm15-go`). Renaming the
-   Julia package instead would change `using LM15` for every user and is a product
-   decision, not a packaging one.
+3. **The name.** The package registers as `LanguageModel15`. The first registration
+   (2026-09-26, JuliaRegistries/General#169598) asked for `LM15`; the registry's automatic
+   merge refused it (shorter than 5 characters, an acronym, close to `LMDB` and `MD5`) and
+   no maintainer took it up in five weeks. `LanguageModel15` was checked on 2026-10-31
+   against the 14,664 registered names with the registry's own distance rules: nothing
+   within a Damerau-Levenshtein distance of 2 (nearest: `LanguageDetect`, 6), so the
+   visual-distance check does not apply. Close #169598 before registering the new name.
+   The UUID is unchanged (the old name was never registered). A new package still waits
+   three days for the registry's naming review.
 
 Later releases: bump `version` in `Project.toml`, update `CHANGELOG.md`, move
 `CONTRACT_PIN` in the same commit as the code that needed it, and register again.
