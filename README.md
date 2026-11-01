@@ -42,7 +42,7 @@ letters that are not acronyms, so the Julia name spells out what lm15 stands
 for. Bind a shorter name in your own code if you like
 (`const LM = LanguageModel15`). It is not yet in Julia's
 General registry (see [RELEASING.md](RELEASING.md)). lm15 is stable in Python,
-TypeScript, Rust, Go and R.
+TypeScript, Rust and Go.
 
 Set the key of the provider you call (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`,
 `GEMINI_API_KEY`, …). The router reads it from the environment. A client made
