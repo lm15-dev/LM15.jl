@@ -7,7 +7,7 @@ response and stream types across supported protocols. There is no LM15 relay.
 You decide which data to send, which functions may run, and when to stop.
 
 !!! note "What was checked"
-    For LanguageModel15 1.0.0 (2026-09-26, Julia 1.12.7): this manual builds in a network-free
+    For lm15 for Julia as first checked (2026-09-26, Julia 1.12.7; re-checked for 2.0.0 on 2026-11-01): this manual builds in a network-free
     sandbox with its doctests; every tutorial and scientific example was run; the live
     examples were run once against OpenAI. See [Status and evidence](project/status.md).
 

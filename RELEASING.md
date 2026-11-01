@@ -1,10 +1,14 @@
 # Releasing LanguageModel15.jl
 
-## What 1.0.0 was checked with
+## What the first release was checked with
 
-Re-checked 2026-10-31 at contract `cfc3edc`, before the pending registration moves to
-the commit that gives every usage counter one meaning (MAP-19): `Pkg.test()` and the
-contract, 1,968 of 1,968. The move needs `@JuliaRegistrator register` on that commit.
+Registered as `LanguageModel15` 2.0.0 (2026-11-01): every lm15 language shares its major
+version, the contract's generation (lm15-contract `playbooks/api-family.md` rule 8), and
+generation 2 (MAP-19) is the first Julia publishes. A new package may start at `X.0.0`.
+Checked at contract `cfc3edc`: `Pkg.test()` and the contract, 1,968 of 1,968. The 1.0.0
+registration of the same commit (JuliaRegistries/General#174330) was superseded.
+
+The entries below record how the never-registered 1.0.0 was checked.
 
 Re-checked 2026-10-15 at contract `6dc1c5c`, when the pending registration moved to the
 commit that adds bounding boxes: `Pkg.test()` and the contract, 1,921 of 1,921.
@@ -53,7 +57,7 @@ python3 ../lm15-contract/tools/check_secrecy.py --root receipts/2026-09-26-live-
 1. Push `main` with the release commit; CI green (tests on three OSes and two Julia
    versions, the contract job, the lowest-compatible-versions job, the docs build).
 2. On the release commit, comment `@JuliaRegistrator register` (the Registrator GitHub
-   app must be installed on the repository). TagBot then tags `v1.0.0`.
+   app must be installed on the repository). TagBot then tags the version (`v2.0.0`).
 3. **The name.** The package registers as `LanguageModel15`. The first registration
    (2026-09-26, JuliaRegistries/General#169598) asked for `LM15`; the registry's automatic
    merge refused it (shorter than 5 characters, an acronym, close to `LMDB` and `MD5`) and

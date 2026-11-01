@@ -1,9 +1,11 @@
 # Changelog
 
-## 1.0.0 — 2026-10-31
+## 2.0.0 — 2026-11-01
 
 The first release of lm15 for Julia, as the package **`LanguageModel15`** (`using
-LanguageModel15`). Until 2026-10-31 it was called `LM15`; Julia's General registry does
+LanguageModel15`). It is numbered 2.0.0 because every lm15 language shares its major
+version, the generation of the shared contract it implements (2 since one meaning per
+usage counter, below); 1.x was never published for Julia. Until 2026-10-31 it was called `LM15`; Julia's General registry does
 not accept that name automatically (fewer than five letters, an acronym), and the request
 for an exception went unanswered, so the Julia name spells out what lm15 stands for. The
 UUID is unchanged and `LM15` was never registered, so nothing installed from the registry
@@ -33,8 +35,8 @@ and on 2026-10-31 (`cfc3edc`, 1,968) one meaning per usage counter.
   is an `ArgumentError`.
 - `estimate(pricing, usage)` returns the exact list price or `nothing` when an unknown
   count could change it; `InferencePricing(; tiers=(PricingTier(; above_input_tokens,
-  ...),))` reprices long prompts. The registration moves to this commit, so 1.0.0 never
-  shipped the earlier meaning (lm15-contract `changes/2026-10-31-usage-one-meaning.md`).
+  ...),))` reprices long prompts. The first registered
+  version already has this meaning (lm15-contract `changes/2026-10-31-usage-one-meaning.md`).
 
 **Bounding boxes (2026-10-15, contract `6dc1c5c`):**
 

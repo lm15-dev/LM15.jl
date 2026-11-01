@@ -29,7 +29,7 @@ Pkg.add(url="https://github.com/lm15-dev/LanguageModel15.jl.git")
 using LanguageModel15
 ```
 
-The repository command selects its current source. Use `rev="v1.0.0"` for the
+The repository command selects its current source. Use `rev="v2.0.0"` for the
 release, and commit your application's `Project.toml` and `Manifest.toml` for
 reproducibility. Once LanguageModel15 is in Julia's General registry, `Pkg.add("LanguageModel15")` works too;
 until then it does not.

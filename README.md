@@ -35,7 +35,8 @@ using Pkg
 Pkg.add(url="https://github.com/lm15-dev/LanguageModel15.jl")
 ```
 
-**1.0.0 is the first release of lm15 for Julia.** The package is named
+**2.0.0 is the first release of lm15 for Julia**, numbered like the
+other languages' 2.0 (every lm15 language shares its major version). The package is named
 `LanguageModel15`: Julia's General registry asks for names of five or more
 letters that are not acronyms, so the Julia name spells out what lm15 stands
 for. Bind a shorter name in your own code if you like

@@ -1,6 +1,6 @@
 name = "LanguageModel15"
 uuid = "7a3c8f1e-2d4b-4e6a-9f8c-1b3d5e7a9c2f"
-version = "1.0.0"
+version = "2.0.0"
 authors = ["Maxime Rivest"]
 
 [deps]

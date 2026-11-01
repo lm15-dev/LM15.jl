@@ -1,6 +1,14 @@
 # Releases and migration notes
 
-## 1.0.0 (2026-09-26)
+## 2.0.0 (2026-11-01)
+
+The first registered release, as the package `LanguageModel15` (it was developed as
+`LM15`; `using LM15` becomes `using LanguageModel15`). It is numbered 2.0.0 like every
+lm15 language's current major version. Every usage counter means one thing on every
+provider (input includes cached tokens, output includes reasoning), and `estimate` is
+exact or `nothing`; see [the changelog](https://github.com/lm15-dev/LanguageModel15.jl/blob/main/CHANGELOG.md).
+
+## 1.0.0 (2026-09-26, never registered)
 
 The first release of lm15 for Julia, at parity with Python, TypeScript, Rust and Go
 (see [the changelog](https://github.com/lm15-dev/LanguageModel15.jl/blob/main/CHANGELOG.md)).

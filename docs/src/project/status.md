@@ -1,6 +1,11 @@
 # Status, support and evidence
 
-## LM15 1.0.0 (2026-09-26)
+## 2.0.0 (2026-11-01)
+
+Shared contract at `cfc3edc`, every direction: 1,968 of 1,968, the same count as Python,
+TypeScript, Rust, Go and R.
+
+## LM15 1.0.0 (2026-09-26, never registered)
 
 | Check | Result |
 |---|---|
