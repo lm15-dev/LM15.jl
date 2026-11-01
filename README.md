@@ -32,7 +32,7 @@ Requires Julia 1.10 or newer.
 
 ```julia
 using Pkg
-Pkg.add(url="https://github.com/lm15-dev/LM15.jl")
+Pkg.add(url="https://github.com/lm15-dev/LanguageModel15.jl")
 ```
 
 **1.0.0 is the first release of lm15 for Julia.** The package is named
@@ -221,6 +221,20 @@ Where Julia differs from the family surface (contract `playbooks/api-family.md`)
 julia --project=. -e 'using Pkg; Pkg.test()'     # unit tests, contract vectors, Aqua
 bash docs/build.sh                                # the manual, built without network
 ```
+
+## How this package is made
+
+Most of the code and documentation here was written by AI coding agents
+(large language models) working under the maintainer's direction. The
+maintainer decides the design and the rules every lm15 language follows, and
+is responsible for the package.
+
+Correctness does not rest on trusting the generated code. Behavior is pinned
+by the shared [contract](https://github.com/lm15-dev/lm15-contract): recorded
+real exchanges with each provider and 1,968 checks, which this package and the
+five other lm15 languages each pass. It is also checked by the unit tests and
+Aqua here, the lowest-compatible-versions job, and CI on Linux, macOS and
+Windows.
 
 ## License
 
